@@ -2,7 +2,6 @@ from telegram.ext import Updater, CommandHandler
 import requests
 import re
 from settings import TG_TOKEN
-#TOKEN = "1082297400:AAE2fpM8ONwmS4NtQj0d6HsDfXNl0lKa3kY"
 
 
 def get_url():
