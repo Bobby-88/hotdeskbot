@@ -1,7 +1,9 @@
 from telegram.ext import Updater, CommandHandler
 import requests
 import re
-TOKEN = "1082297400:AAE2fpM8ONwmS4NtQj0d6HsDfXNl0lKa3kY"
+from settings import TG_TOKEN
+#TOKEN = "1082297400:AAE2fpM8ONwmS4NtQj0d6HsDfXNl0lKa3kY"
+
 
 def get_url():
     contents = requests.get('https://random.dog/woof.json').json()
@@ -16,7 +18,7 @@ def bop(bot, update):
 
 def main():
     #this seems to be deprecated - ignoring for now coz we can
-    updater = Updater(TOKEN)
+    updater = Updater(TG_TOKEN)
     dp = updater.dispatcher
     dp.add_handler(CommandHandler('bop', bop))
     updater.start_polling()
