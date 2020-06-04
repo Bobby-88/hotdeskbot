@@ -12,7 +12,10 @@ def get_url():
 def bop(bot, update):
     url = get_url()
     chat_id = update.message.chat_id
-    bot.send_photo(chat_id=chat_id, photo=url)
+    bsp = bot.send_photo(chat_id=chat_id, photo=url)
+    print(bsp)
+    bsm = bot.send_message(chat_id=chat_id, text="test")
+    print(bsm)
 
 
 def main():
