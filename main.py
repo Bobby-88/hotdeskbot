@@ -57,10 +57,10 @@ def bop(update, context):
         photo=url
     )
     print(bsp)
-    bsm = update.message.reply_message(
-        text="test"
-    )
-    print(bsm)
+    # bsm = update.message.reply_message(
+    #     text="test"
+    # )
+    # print(bsm)
 
 
 
