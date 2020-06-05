@@ -3,7 +3,7 @@ import gspread
 
 def add_gsheet():
     gc = gspread.service_account(filename='gsheet-credentials.json')
-    sh = gc.open("hotdesk")
+    sh = gc.open("Help")
     # offices_worksheet = sh.worksheet("Offices")
     # offices = offices_worksheet.col_values(1)
     print(sh.sheet1.get('A1'))
