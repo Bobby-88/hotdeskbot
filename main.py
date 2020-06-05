@@ -34,13 +34,7 @@ GREETING = """
 - Небо затянуло тучами и вот вот начнется ливень? :tw-2614: **Бррр...** Ничего не может быть лучше, чем остаться дома в такую погоду, согласен? Или просто любишь поработать из дома? Давай вместе **оформим тебе заявку на работу из дома** на сегодня... или может даже на недельку?:tw-1f60f:;
 """
 
-GREETING = r'''
-test1
-*test2*
-\#\# test3
-:tw\-2614: 4
-**test5**
-'''
+GREETING = "*bold* _italic_ `fixed width font` [link](http://google.com)\. 🎉"
 
 # inv_offices = []
 
@@ -339,6 +333,10 @@ def main():
     # bootstrapping telegram bot
     updater = Updater(TG_TOKEN, use_context=True)
     dp = updater.dispatcher
+    # print("get_lists(sheet, 'Credentials') output:")
+    # print(get_lists(sheet,"Credentials"))
+    # add_row(sheet,"Credentials",["first","second","third for love"])
+    # update_row(sheet,"Credentials","first",3,"new")
 
     dp.add_handler(CommandHandler('bop', bop))
     dp.add_handler(CommandHandler('hello', hello))
