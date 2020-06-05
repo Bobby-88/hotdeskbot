@@ -10,6 +10,7 @@ from gsheet import *
 
 from workplace.controller import *
 from bot.functions import *
+import telegramcalendar
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -35,6 +36,7 @@ GREETING = """
 """
 
 GREETING = "*bold* _italic_ `fixed width font` [link](http://google.com)\. 🎉"
+
 
 # inv_offices = []
 
@@ -188,7 +190,7 @@ def start_auth(update, context):
     print(received_auth_key)
     authed = False
     for i, user in enumerate(inv_users):
-        #print(user, email)
+        # print(user, email)
         if user[1] == received_auth_key:
             print("match found:", user[2])
             # print("match found:", i)
@@ -220,9 +222,10 @@ def identify_next_step_after_auth(update, context):
     # photo_file = update.message.photo[-1].get_file()
     # photo_file.download('user_photo.jpg')
     logger.info("Choice of %s is: %s", user.first_name, update.message.text)
-    #global email
-    #email = update.message.text
-    update.message.reply_text('Gorgeous! You want to '+update.message.text+'. Please enter the preferred date in UNIX timestamp format of course:')
+    # global email
+    # email = update.message.text
+    update.message.reply_text(
+        'Gorgeous! You want to ' + update.message.text + '. Please enter the preferred date in UNIX timestamp format of course:')
 
     return PASSWORD
 
@@ -320,6 +323,19 @@ def error(update, context):
     logger.warning('Update "%s" caused error "%s"', update, context.error)
 
 
+def calendar_handler(update, context):
+    update.message.reply_text(text="Please select a date: ",
+                              reply_markup=telegramcalendar.create_calendar())
+
+
+def inline_handler(update, context):
+    selected, date = telegramcalendar.process_calendar_selection(update, context)
+    if selected:
+        context.bot.send_message(chat_id=update.callback_query.from_user.id,
+                                 text="You selected %s" % (date.strftime("%d/%m/%Y")),
+                                 reply_markup=ReplyKeyboardRemove())
+
+
 def main():
     # retrieving const DB
     global sheet
@@ -333,16 +349,18 @@ def main():
     # bootstrapping telegram bot
     updater = Updater(TG_TOKEN, use_context=True)
     dp = updater.dispatcher
-    # print("get_lists(sheet, 'Credentials') output:")
-    # print(get_lists(sheet,"Credentials"))
-    # add_row(sheet,"Credentials",["first","second","third for love"])
-    # update_row(sheet,"Credentials","first",3,"new")
+    print("get_lists(sheet, 'Credentials') output:")
+    print(get_lists(sheet, "Credentials"))
+    add_row(sheet, "Credentials", ["first", "second", "third for love"])
+    update_row(sheet, "Credentials", "first", 2, "new")
 
     dp.add_handler(CommandHandler('bop', bop))
     dp.add_handler(CommandHandler('hello', hello))
     # dp.add_handler(CommandHandler('start', start))
     dp.add_handler(CallbackQueryHandler(button))
     dp.add_handler(CommandHandler('offices', offices))
+    dp.add_handler(CommandHandler("calendar", calendar_handler))
+    dp.add_handler(CallbackQueryHandler(inline_handler))
 
     onboarding_handler = ConversationHandler(
         entry_points=[CommandHandler('start', start_auth)],
