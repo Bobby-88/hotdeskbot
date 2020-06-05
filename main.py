@@ -167,6 +167,8 @@ def start(update, context):
 def start_auth(update, context):
     user = update.message.from_user
     logger.info("Gender of %s: %s", user.first_name, update.message.text)
+    received_auth_key = update.message.text.split(' ')[1]
+    print(received_auth_key)
     update.message.reply_text('I see! What\'s your e-mail address ?',
                               reply_markup=ReplyKeyboardRemove())
 
