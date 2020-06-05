@@ -41,9 +41,26 @@ def get_lists(sheet, worksheet):
     return wksheet.get_all_values()[1:]
 
 
-# todo add description
+# sheet is an instance of google sheet - this is returned by add_gsheet somewhere in init section
+# worksheet is a sheet name, e.g. "RESERVATIONS", "Credentials"
 # values should be a list
 def add_row(sheet, worksheet, values):
     wksheet = sheet.worksheet(worksheet)
     wksheet.append_row(values)
+    return
+
+# sheet is an instance of google sheet - this is returned by add_gsheet somewhere in init section
+# worksheet is a sheet name, e.g. "RESERVATIONS", "Credentials"
+# id is a value of the ID - first column in a table
+# key is a horizontal offset/coordinate/column (starting from 1, not from zero sorry) - e.g. 1 = A, 2 = B in excel
+# value should be a integer/string which you want to write to the cell
+def update_row(sheet, worksheet, id, key, value):
+    wksheet = sheet.worksheet(worksheet)
+    #get a first column with ids
+    ids = wksheet.col_values(1)
+    #find which row our id is at
+    row = ids.index(id)
+    print(row)
+    wksheet.update_cell(row+1,key,value)
+    #update_cell(row, 4, id)
     return
