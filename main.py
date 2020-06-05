@@ -168,25 +168,47 @@ def start(update, context):
 
 
 def start_auth(update, context):
-    user = update.message.from_user
-    logger.info("Gender of %s: %s", user.first_name, update.message.text)
+    tg_user = update.message.from_user
+    logger.info("Gender of %s: %s", tg_user.first_name, update.message.text)
     received_auth_key = update.message.text.split(' ')[1]
     print(received_auth_key)
-    update.message.reply_text('I see! What\'s your e-mail address ?',
-                              reply_markup=ReplyKeyboardRemove())
+    authed = False
+    for i, user in enumerate(inv_users):
+        #print(user, email)
+        if user[1] == received_auth_key:
+            print("match found:", user[2])
+            # print("match found:", i)
+            # i+1 is needed because there counting starts at 1, not at 0
+            persist_user_id(sheet, i + 1, tg_user.id)
+            authed = True
+
+    # update.message.reply_text('I see! What\'s your e-mail address ?',
+    #                           reply_markup=ReplyKeyboardRemove())
+
+    if authed:
+        reply_keyboard = [['Хочу поработать', 'Уезжаю в командос', 'Корона? Хочу в офис']]
+
+        update.message.reply_text(
+            '**Access GRANTED**'
+            '\n'
+            'How can i help you?',
+            reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True), parse_mode=ParseMode.MARKDOWN_V2)
+        return AUTHED
+    else:
+        update.message.reply_text('Credentials not found.'
+                                  'Please ask an Administrator to add you, and give an email:')
 
     return EMAIL
 
 
-def get_email(update, context):
+def identify_next_step_after_auth(update, context):
     user = update.message.from_user
     # photo_file = update.message.photo[-1].get_file()
     # photo_file.download('user_photo.jpg')
-    logger.info("Email of %s: %s", user.first_name, update.message.text)
-    global email
-    email = update.message.text
-    update.message.reply_text('Gorgeous! Now, send me your password please, '
-                              'or send /skip if you don\'t want to.')
+    logger.info("Choice of %s is: %s", user.first_name, update.message.text)
+    #global email
+    #email = update.message.text
+    update.message.reply_text('Gorgeous! You want to '+update.message.text+'. Please enter the preferred date in UNIX timestamp format of course:')
 
     return PASSWORD
 
@@ -308,10 +330,10 @@ def main():
         entry_points=[CommandHandler('start', start_auth)],
         states={
             # OFFICE: [MessageHandler(Filters.text, get_office)],
-            EMAIL: [MessageHandler(Filters.text, get_email)],
+            EMAIL: [MessageHandler(Filters.text, identify_next_step_after_auth)],
             PASSWORD: [MessageHandler(Filters.text, get_password)],
             # BIO: [MessageHandler(Filters.text, bio)],
-            AUTHED: [MessageHandler(Filters.text, get_email)],
+            AUTHED: [MessageHandler(Filters.text, identify_next_step_after_auth)],
 
             SUMMARY: [MessageHandler(Filters.text, complete_auth)],
             BEGIN_MAIN_JOURNEY: [MessageHandler(Filters.text, begin_main_journey)],
