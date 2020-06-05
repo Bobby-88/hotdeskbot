@@ -1,3 +1,8 @@
+from workplace.pool import WorkplacePool, Workplace, WorkplaceRequest
+
+pool = WorkplacePool()
+pool.LoadTest()
+
 def get_workplace_by_user(user_id: str) -> str:
     pass
 

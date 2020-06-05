@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Set
 
 from user.credentials import *
 
@@ -62,7 +62,7 @@ class WorkplacePool(dict):
             r = r + "{}: {}".format(k, v)
         return r
 
-    def get_options(self, request: WorkplaceRequest):
+    def get_workplaces(self, request):
         r = WorkplacePool()
         for k, v in self.items():
             if v.matches(request):
@@ -70,14 +70,28 @@ class WorkplacePool(dict):
 
         return r
 
+    def __get_unique_values(self, request, field: str) -> Set[str]:
+        r = set()
+        for k, v in self.items():
+            if v.matches(request):
+                r.add(v[field])
+
+        return r
+
+    def get_offices(self, request = {}) -> Set[str]:
+        return self.__get_unique_values(request, "office")
+
+    def get_floors(self, request = {}) -> Set[str]:
+        return self.__get_unique_values(request, "floor")
+
     # For testing needs only
     def LoadTest(self):
         self["Kiev-HD-1"] = Workplace( { "office": "Kiev", "floor": "6", "number": "505-1", "type": "hotseat", "options": ["window", "printer"             ], "req": [], "coord_x": 1, "coord_y": 2 } )
         self["Kiev-HD-2"] = Workplace( { "office": "Kiev", "floor": "5", "number": "505-2", "type": "hotseat", "options": ["window", "printer", "project_x"], "req": [], "coord_x": 1, "coord_y": 2 } )
-        self["Kiev-HD-3"] = Workplace( { "office": "Kiev", "floor": "5", "number": "505-3", "type": "hotseat", "options": ["window",                       ], "req": [], "coord_x": 1, "coord_y": 2 } )
-        self["Kiev-HD-4"] = Workplace( { "office": "Kiev", "floor": "5", "number": "505-4", "type": "static",  "options": ["window",            "project_x"], "req": [], "coord_x": 1, "coord_y": 2 } )
-        self["Kiev-HD-5"] = Workplace( { "office": "Kiev", "floor": "4", "number": "505-5", "type": "static",  "options": [          "printer"             ], "req": [], "coord_x": 1, "coord_y": 2 } )
-        self["Kiev-HD-6"] = Workplace( { "office": "Kiev", "floor": "4", "number": "505-6", "type": "hotseat", "options": [          "printer", "project_x"], "req": [], "coord_x": 1, "coord_y": 2 } )
+        self["Kiev-HD-3"] = Workplace( { "office": "Moscow", "floor": "5", "number": "505-3", "type": "hotseat", "options": ["window",                       ], "req": [], "coord_x": 1, "coord_y": 2 } )
+        self["Kiev-HD-4"] = Workplace( { "office": "Moscow", "floor": "5", "number": "505-4", "type": "static",  "options": ["window",            "project_x"], "req": [], "coord_x": 1, "coord_y": 2 } )
+        self["Kiev-HD-5"] = Workplace( { "office": "Moscow", "floor": "4", "number": "505-5", "type": "static",  "options": [          "printer"             ], "req": [], "coord_x": 1, "coord_y": 2 } )
+        self["Kiev-HD-6"] = Workplace( { "office": "Moscow", "floor": "4", "number": "505-6", "type": "hotseat", "options": [          "printer", "project_x"], "req": [], "coord_x": 1, "coord_y": 2 } )
         self["Kiev-HD-7"] = Workplace( { "office": "Kiev", "floor": "4", "number": "505-7", "type": "hotseat", "options": [                     "project_x"], "req": [], "coord_x": 1, "coord_y": 2 } )
         self["Kiev-HD-8"] = Workplace( { "office": "Kiev", "floor": "4", "number": "505-8", "type": "static",  "options": [                                ], "req": [], "coord_x": 1, "coord_y": 2 } )
 
@@ -100,10 +114,13 @@ def test():
 
     print(pool)
     print("---------")
-    # options = pool.get_options({"type": ["hotseat"] })
-    # options = pool.get_options({"floor": ["9", "5"] })
-    # options = pool.get_options({"type": ["static"], "floor": ["4", "5"] })
-    options = pool.get_options({"options":["window,project_x"]})
+    print("Offices: {}".format(pool.get_offices()))
+    print("Floors: {}".format(pool.get_floors()))
+    print("---------")
+    # options = pool.get_workplaces({"type": ["hotseat"] })
+    # options = pool.get_workplaces({"floor": ["9", "5"] })
+    # options = pool.get_workplaces({"type": ["static"], "floor": ["4", "5"] })
+    options = pool.get_workplaces({"options":["window,project_x"]})
     print(options)
 
 
@@ -112,3 +129,4 @@ def test():
 
 if __name__ == '__main__':
     test()
+
