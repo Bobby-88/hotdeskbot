@@ -4,7 +4,7 @@ import re
 from settings import TG_TOKEN
 import logging
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup, \
-    ReplyKeyboardRemove
+    ReplyKeyboardRemove, ParseMode
 from telegram.ext import (Updater, CommandHandler, CallbackQueryHandler, ConversationHandler, MessageHandler, Filters)
 from gsheet import *
 
@@ -14,8 +14,11 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 # OFFICE, \
-EMAIL, PASSWORD, SUMMARY, BEGIN_MAIN_JOURNEY = range(4)
+EMAIL, PASSWORD, SUMMARY, BEGIN_MAIN_JOURNEY, MAIN_JOURNEY_2, AUTHED = range(6)
 
+WANNA_WORK = "Хочу поработать"
+BUSINESS_TRIP = "Уезжаю в командос"
+WANT_BACK_TO_OFFICE = "Корона? Хочу в офис"
 
 # inv_offices = []
 
@@ -126,6 +129,26 @@ def begin_main_journey(update, context):
     # print(buttons)
 
     update.message.reply_text('Please choose:', reply_markup=keyboard)
+    print("reply is ", update.message.text)
+    return MAIN_JOURNEY_2
+
+
+def main_journey_2(update, context):
+    print("in main journey 2")
+    buttons = []
+
+    # for key, value in dicts.items():
+    print("reply is ", update.message.text)
+
+    for value in ["Хочу поработать", "Уезжаю в командос", "Корона? Хочу в офис"]:  # inv_offices:
+        buttons.append(
+            [InlineKeyboardButton(text=value, callback_data=value)]
+        )
+    keyboard = InlineKeyboardMarkup(buttons)
+    # print(buttons)
+
+    update.message.reply_text('Please choose:', reply_markup=keyboard)
+    print("reply is ", update.message.text)
     return ConversationHandler.END
 
 
@@ -173,15 +196,37 @@ def skip_password(update, context):
 
 
 def get_password(update, context):
-    user = update.message.from_user
+    tg_user = update.message.from_user
     global password
     # user_location = update.message.location
-    logger.info("Password of %s: %s", user.first_name, update.message.text)
+    logger.info("Password of %s: %s", tg_user.first_name, update.message.text)
     password = update.message.text
-    update.message.reply_text('Maybe I can visit you sometime! '
-                              'At last, tell me something about yourself.')
+    # authing
+    print("in complete auth")
+    authed = False
+    for i, user in enumerate(inv_users):
+        print(user, email)
+        if user[0] == email and user[1] == password:
+            print("match found:", user[2])
+            # print("match found:", i)
+            # i+1 is needed because there counting starts at 1, not at 0
+            persist_user_id(sheet, i + 1, tg_user.id)
+            authed = True
+    # /authing
+    if authed:
+        reply_keyboard = [['Хочу поработать', 'Уезжаю в командос', 'Корона? Хочу в офис']]
 
-    return SUMMARY
+        update.message.reply_text(
+            '**Access GRANTED**'
+            '\n'
+            'How can i help you?',
+            reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True), parse_mode=ParseMode.MARKDOWN_V2)
+        return AUTHED
+    else:
+        update.message.reply_text('Credentials not found.'
+                                  'Please ask an Administrator to add you, and give an email:')
+
+    return EMAIL
 
 
 # def skip_location(update, context):
@@ -194,7 +239,8 @@ def get_password(update, context):
 
 
 def complete_auth(update, context):
-    authed = false
+    print("in complete auth")
+    authed = False
     tg_user = update.message.from_user
     logger.info("Bio of %s: %s", tg_user.first_name, update.message.text)
     for i, user in enumerate(inv_users):
@@ -204,7 +250,7 @@ def complete_auth(update, context):
             print("match found:", i)
             # i+1 is needed because there counting starts at 1, not at 0
             persist_user_id(sheet, i + 1, tg_user.id)
-
+            authed = True
     buttons = []
 
     # for key, value in dicts.items():
@@ -260,8 +306,11 @@ def main():
             EMAIL: [MessageHandler(Filters.text, get_email)],
             PASSWORD: [MessageHandler(Filters.text, get_password)],
             # BIO: [MessageHandler(Filters.text, bio)],
+            AUTHED: [MessageHandler(Filters.text, get_email)],
+
             SUMMARY: [MessageHandler(Filters.text, complete_auth)],
-            BEGIN_MAIN_JOURNEY: [MessageHandler(Filters.text, begin_main_journey)]
+            BEGIN_MAIN_JOURNEY: [MessageHandler(Filters.text, begin_main_journey)],
+            MAIN_JOURNEY_2: [MessageHandler(Filters.text, main_journey_2)],
         },
         fallbacks=[CommandHandler('cancel', cancel)]
     )
