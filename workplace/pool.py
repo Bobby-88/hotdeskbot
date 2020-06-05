@@ -1,6 +1,5 @@
-from typing import List, Set
-
-from user.credentials import *
+from typing import List, Set, Union # https://mypy.readthedocs.io/en/stable/cheat_sheet_py3.html
+import logging
 
 # TODO: static -> assigned
 # TODO: const static/hotseat
@@ -16,18 +15,10 @@ class Workplace(dict):
         super().__init__(data)
 
     def matches(self, request: WorkplaceRequest) -> bool:
-
-        # print()
-        # print("DEBUG: {}".format(self))
+        logging.debug("Matching {}".format(self))
         for c in list(request.keys()):
-            # print("DEBUG: >> Criteria: '{}'".format(c))
+            logging.debug(">> Criteria: '{}'".format(c))
             if c in self:
-                # for r_v in request[c]:
-                #     s_v = self[c]
-                #     if s_v != r_v:
-                #         print("DEBUG: Not matching criteria '{}': Seat:'{}' != Request:'{}'".format(c, s_v, r_v))
-                #         return False
-
                 s_value_list = self[c]
                 if type(s_value_list) != list:
                     s_value_list= [s_value_list]
@@ -37,7 +28,7 @@ class Workplace(dict):
 
                     # criteria_match = criteria_match or any(s_v == r_v for s_v in s_value_list)
                     subcriteria_value_list = r_v.split(',')
-                    # print("DEBUG: >> Request value: '{}' -> {}".format(r_v, subcriteria_value_list))
+                    logging.debug(">> Request value: '{}' -> {}".format(r_v, subcriteria_value_list))
 
                     subcriteria_match = True
                     for s_r_v in subcriteria_value_list:
@@ -45,9 +36,10 @@ class Workplace(dict):
                     criteria_match = criteria_match or subcriteria_match
 
                 if not criteria_match:
-                    # print("DEBUG: Not matching criteria '{}': (seat) '{}' != (request) '{}'".format(c, self[c], request[c]))
+                    logging.debug(">> Does NOT comply criteria '{}': (seat) '{}' != (request) '{}'".format(c, self[c], request[c]))
                     return False
 
+        logging.debug(">> COMPLIES")
         return True
 
 class WorkplacePool(dict):
@@ -62,7 +54,7 @@ class WorkplacePool(dict):
             r = r + "{}: {}".format(k, v)
         return r
 
-    def get_workplaces(self, request):
+    def get_workplaces(self, request: Union[dict, WorkplaceRequest] = {}) -> 'WorkplacePool':
         r = WorkplacePool()
         for k, v in self.items():
             if v.matches(request):
@@ -70,7 +62,7 @@ class WorkplacePool(dict):
 
         return r
 
-    def __get_unique_values(self, request, field: str) -> Set[str]:
+    def __get_unique_values(self, request: Union[dict, WorkplaceRequest], field: str) -> Set[str]:
         r = set()
         for k, v in self.items():
             if v.matches(request):
@@ -78,14 +70,15 @@ class WorkplacePool(dict):
 
         return r
 
-    def get_offices(self, request = {}) -> Set[str]:
+    def get_offices(self, request: Union[dict, WorkplaceRequest] = {}) -> Set[str]:
         return self.__get_unique_values(request, "office")
 
-    def get_floors(self, request = {}) -> Set[str]:
+    def get_floors(self, request: Union[dict, WorkplaceRequest] = {}) -> Set[str]:
         return self.__get_unique_values(request, "floor")
 
     # For testing needs only
-    def LoadTest(self):
+    def LoadTest(self) -> None:
+        logging.warning("Loading test data")
         self["Kiev-HD-1"] = Workplace( { "office": "Kiev", "floor": "6", "number": "505-1", "type": "hotseat", "options": ["window", "printer"             ], "req": [], "coord_x": 1, "coord_y": 2 } )
         self["Kiev-HD-2"] = Workplace( { "office": "Kiev", "floor": "5", "number": "505-2", "type": "hotseat", "options": ["window", "printer", "project_x"], "req": [], "coord_x": 1, "coord_y": 2 } )
         self["Kiev-HD-3"] = Workplace( { "office": "Moscow", "floor": "5", "number": "505-3", "type": "hotseat", "options": ["window",                       ], "req": [], "coord_x": 1, "coord_y": 2 } )
@@ -108,15 +101,24 @@ def make_greeting_message() -> str:
 def make_result_message() -> str:
     pass
 
-def test():
+def test() -> None:
+    # CRITICAL, ERROR, WARNING, INFO, DEBUG, NOTSET - https://docs.python.org/3/library/logging.html#logging-levels
+    # logging.basicConfig(level=logging.NOTSET, format="%(levelname)s: ('%(module)s', %(lineno)d) %(message)s")
+    logging.basicConfig(level=logging.WARNING, format="%(levelname)s: ('%(module)s', %(lineno)d) %(message)s")
+
     pool = WorkplacePool()
     pool.LoadTest()
 
+    print("== Whole pool:")
     print(pool)
-    print("---------")
+
+    print()
+    print("== Selections:")
     print("Offices: {}".format(pool.get_offices()))
     print("Floors: {}".format(pool.get_floors()))
-    print("---------")
+
+    print()
+    print("== Query result:")
     # options = pool.get_workplaces({"type": ["hotseat"] })
     # options = pool.get_workplaces({"floor": ["9", "5"] })
     # options = pool.get_workplaces({"type": ["static"], "floor": ["4", "5"] })
