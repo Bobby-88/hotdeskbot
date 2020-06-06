@@ -43,10 +43,7 @@ def user_has_reserved_workplace(user_id: str) -> bool:
     return False
 
 ################################################################################
-################################################################################
-################################################################################
-################################################################################
-def get_availabile_wp(from_date: datetime, to_date: datetime, criteria: WorkplaceRequest, min_distance = 0) -> WorkplacePool:
+def get_availabile_wp(from_date: datetime, to_date: datetime, criteria: WorkplaceRequest, min_distance = 0) -> Union[WorkplacePool, None]:
     ### What is already occupied for the dates
     existing_reservations = reservations.get_reservations(from_date, to_date)
     logging.debug("Existing reservations for the dates:\n{}".format(existing_reservations))
@@ -157,13 +154,13 @@ def reserve_quarantine_wp(user_id: str) -> Union[Workplace, None]:
         "name": ""
     } )
     logging.info("Adding reservation: {}".format(res))
-    ### reservations.set_reservation(res)
+    reservations.set_reservation(res)
     logging.info("Reservation completed")
 
     return wp_to_reserve
 
 
-def reserve_hotdesk2(user_id: str, office: str, from_date: datetime, to_date: datetime) -> Union[Workplace, None]:
+def reserve_hotdesk(user_id: str, office: str, from_date: datetime, to_date: datetime) -> Union[Workplace, None]:
     user = users.get_user(user_id)
 
     criteria = WorkplaceRequest(
@@ -194,184 +191,20 @@ def reserve_hotdesk2(user_id: str, office: str, from_date: datetime, to_date: da
         "name": ""
     } )
     logging.info("Adding reservation: {}".format(res))
-    # reservations.set_reservation(res)
+    reservations.set_reservation(res)
     logging.info("Reservation is completed".format(res))
 
     return wp_to_reserve
 
-
 ################################################################################
-################################################################################
-################################################################################
-################################################################################
-
-def find_place_in_quarantine(user_id: str) -> Union[Workplace, None]:
-    from_date = QUARANTINE_EASING_START
-    to_date =  QUARANTINE_EASING_END
-
-    office = "Kyiv"
-
-    reserved_wp = reservations.get_reservations(from_date, to_date)
-    logging.debug("Existing reservations to the dates:\n{}".format(reserved_wp))
-
-    exception_list = set()
-    for k, v in reserved_wp.items():
-        exception_list.add(v["workplace"])
-
-    exception_list = list(exception_list)
-    exception_list.sort()
-    logging.info("Existing reservations to the dates: {}".format( exception_list ))
-
-    req = WorkplaceRequest(
-        {
-            # No workplace type
-            "office": [ office ],
-            "excluded_ids": list(exception_list),
-        }
-    )
-
-    # No user preferences
-
-    logging.info("Request for unoccupied workplaces:\n{}".format(req) )
-    # Make pool of safe places
-
-    available_wp = wp_pool.get_workplaces(req)
-    logging.info("Unoccupied workspaces matching criteria:\n{}".format(available_wp) )
-
-    ###
-    # Safe distance check
-
-    # Validate distance
-    logging.info("Distance validation against: {}".format( exception_list ))
-
-    unsafe_wp_keys = set()
-    for awp_k, awp_v in available_wp.items():
-        is_safe = True
-        logging.debug("WP: {}".format(awp_k))
-        for owp_k in exception_list:
-            if awp_k == owp_k:
-                continue
-
-            if owp_k not in wp_pool: # Error: there is reservation, there is no worplace in the pool
-                continue
-
-            owp_v = wp_pool[owp_k]
-
-            distance = awp_v.get_distance(owp_v)
-
-            logging.debug(">> {}({},{}) - {}({},{}) = {}".format(
-                awp_k, awp_v["coord_x"], awp_v["coord_y"],
-                owp_k, owp_v["coord_x"], owp_v["coord_y"],
-                distance))
-
-            if distance < QUARANTINE_DISTANCE:
-                logging.info("WP unsafe: {}({},{}) - {}({},{}) = {} < {}".format(
-                    awp_k, awp_v["coord_x"], awp_v["coord_y"],
-                    owp_k, owp_v["coord_x"], owp_v["coord_y"],
-                    distance, QUARANTINE_DISTANCE))
-
-                is_safe = False
-                unsafe_wp_keys.add(awp_k)
-                break
-
-        if is_safe:
-            logging.info("WP SAFE: {}({},{})".format(
-                awp_k, awp_v["coord_x"], awp_v["coord_y"])
-            )
-
-    for k in unsafe_wp_keys:
-        del available_wp[k]
-
-    ###
-    logging.info("Workplaces available to the user:\n{}".format(available_wp) )
-
-    if len(available_wp) == 0:
-        logging.info("No place to reserve")
-        return None
-
-    # Choosing specific place
-    wp_to_reserve_key = list(available_wp.keys())[0]
-    wp_to_reserve = available_wp[ wp_to_reserve_key ]
-    logging.info("Workplace to reserve: {}".format(wp_to_reserve) )
-
-    res = Reservation( {
-        "workplace": wp_to_reserve_key,
-        "user": user_id,
-        "reserved_from": from_date,
-        "reserved_to": to_date,
-        "name": ""
-    } )
-    logging.info("Adding reservation: {}".format(res))
-    ### reservations.set_reservation(res)
-    logging.info("Reservation is completed".format(res))
-
-    return wp_to_reserve
-
-
-def reserve_hotdesk(user_id: str, office: str, from_date: datetime, to_date: datetime) -> Union[Workplace, None]:
-    user = users.get_user(user_id)
-
-    reserved_wp = reservations.get_reservations(from_date, to_date)
-    logging.debug("Existing reservations to the dates:\n{}".format(reserved_wp))
-
-    exception_list = set()
-    for k, v in reserved_wp.items():
-        exception_list.add(v["workplace"])
-
-    exception_list = list(exception_list)
-    exception_list.sort()
-    logging.info("Existing reservations to the dates: {}".format(exception_list))
-
-    req = WorkplaceRequest(
-        {
-            "type": [WP_TYPE_HOTDESK] ,
-            "office": [ office ],
-            "excluded_ids": list(exception_list),
-        }
-    )
-
-    logging.info("User preferencs: {}".format(user["preferences"]) )
-    req.update(user["preferences"])
-
-    logging.info("Workplace request: {}".format(req) )
-
-    available_wp = wp_pool.get_workplaces(req)
-
-    ###
-    logging.info("Workplaces available to the user:\n{}".format(available_wp) )
-
-    if len(available_wp) == 0:
-        logging.info("No place to reserve")
-        return None
-
-    # Choosing specific place
-    wp_to_reserve_key = list(available_wp.keys())[0]
-    wp_to_reserve = available_wp[ wp_to_reserve_key ]
-    logging.info("Workplace to reserve: {}".format(wp_to_reserve) )
-
-    res = Reservation( {
-        "workplace": wp_to_reserve_key,
-        "user": user_id,
-        "reserved_from": from_date,
-        "reserved_to": to_date,
-        "name": ""
-    } )
-    logging.info("Adding reservation: {}".format(res))
-    # reservations.set_reservation(res)
-    logging.info("Reservation is completed".format(res))
-
-    return wp_to_reserve
-
-    # options = wp_pool.get_workplaces({"excluded_ids": ["Kiev-HD-01", "Kiev-HD-03"], "type": [WP_TYPE_HOTDESK] })
 
 def test() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: ('%(module)s', %(lineno)d) %(message)s")
 
-    # Old: reserve_hotdesk('kroz.nn@gmail.com', 'Kyiv', datetime(2020, 6, 1), datetime(2020, 6, 20))
-    # Old: find_place_in_quarantine('kroz.nn@gmail.com')
+    reserve_hotdesk('kroz.nn@gmail.com', 'Kyiv', datetime(2020, 6, 1), datetime(2020, 6, 20))
 
-    reserve_hotdesk2('kroz.nn@gmail.com', 'Kyiv', datetime(2020, 6, 1), datetime(2020, 6, 20))
     # reserve_quarantine_wp('kroz.nn@gmail.com')
+
 
 if __name__ == '__main__':
     test()
