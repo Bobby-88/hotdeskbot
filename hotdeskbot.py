@@ -17,9 +17,9 @@ bot.
 import logging
 import telegramcalendar
 from settings import TG_TOKEN
-from bot import responds
+from bot import responses
 
-from telegram import (ReplyKeyboardMarkup, ReplyKeyboardRemove)
+from telegram import (ReplyKeyboardMarkup, ReplyKeyboardRemove, ParseMode)
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters,
                           ConversationHandler)
 
@@ -36,7 +36,7 @@ def start(update, context):
     reply_keyboard = [['Забронировать рабочее место👨‍💻']]
 
     update.message.reply_text(
-        responds.GREETING,
+        responses.GREETING, parse_mode=ParseMode.MARKDOWN_V2,
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
 
     return HOT_DESK
@@ -44,7 +44,7 @@ def start(update, context):
 def hotdesk(update, context):
     reply_keyboard = [['Хочу поработать!']]
     update.message.reply_text(
-        responds.UC1_WELCOME,
+        responses.OFFICE_WELCOME, parse_mode=ParseMode.MARKDOWN_V2,
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
 
     return START_DATE
@@ -54,7 +54,7 @@ def start_date(update, context):
     user = update.message.from_user
     reply_keyboard = [['start date']]
     logger.info("start date")
-    update.message.reply_text(text=responds.UC1_START_DATE,
+    update.message.reply_text(text=responses.OFFICE_START_DATE, parse_mode=ParseMode.MARKDOWN_V2,
                               reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
 
     return END_DATE
@@ -64,21 +64,21 @@ def end_date(update, context):
     user = update.message.from_user
     reply_keyboard = [['end date']]
     logger.info("end date")
-    update.message.reply_text(text=responds.UC1_END_DATE,
+    update.message.reply_text(text=responses.OFFICE_END_DATE, parse_mode=ParseMode.MARKDOWN_V2,
                               reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
 
     return SEAT_RESERVATION
 
 
 def seat_reservation(update, context):
-    update.message.reply_text(responds.UC1_SEAT_RESERVATION)
+    update.message.reply_text(responses.OFFICE_SEAT_RESERVATION, parse_mode=ParseMode.MARKDOWN_V2)
     return ConversationHandler.END
 
 
 def cancel(update, context):
     user = update.message.from_user
     logger.info("User %s canceled the conversation.", user.first_name)
-    update.message.reply_text('Bye! I hope we can talk again some day.',
+    update.message.reply_text('Bye! I hope we can talk again some day.', parse_mode=ParseMode.MARKDOWN_V2,
                               reply_markup=ReplyKeyboardRemove())
 
     return ConversationHandler.END
@@ -103,7 +103,7 @@ def main():
         entry_points=[CommandHandler('start', start)],
 
         states={
-            HOT_DESK: [MessageHandler(Filters.text, start_date)],
+            HOT_DESK: [MessageHandler(Filters.text, hotdesk)],
 
             START_DATE: [MessageHandler(Filters.text, start_date)],
 

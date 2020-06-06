@@ -10,6 +10,7 @@ from gsheet import *
 
 from workplace.controller import *
 from bot.functions import *
+from bot.responses import *
 import telegramcalendar
 from datetime import datetime
 
@@ -25,18 +26,9 @@ WANNA_WORK = "Хочу поработать"
 BUSINESS_TRIP = "Уезжаю в командос"
 WANT_BACK_TO_OFFICE = "Корона? Хочу в офис"
 
-GREETING = """
-## Рад тебя видеть, друг! :tw-1f44b:
 
-#### Давай знакомиться, я бот Hotdesk reservation :tw-1f419:  
 
-##### Чем могу тебе помочь? Вот несколько задач, которые я выполняю:
-- Я помогаю работникам **Netcracker** вырваться из карантина, а это значит, что у тебя есть **уникальная возможность** в ряду первых вернуться к привычной работе в офис :tw-1f3e2: 
-- Ты отправляешься в командировку? :tw-1f680: Тогда я могу помочь тебе забронировать рабочее место... Что? Хочешь у окошка? Поближе к принтеру? **Не проблема!** ;
-- Небо затянуло тучами и вот вот начнется ливень? :tw-2614: **Бррр...** Ничего не может быть лучше, чем остаться дома в такую погоду, согласен? Или просто любишь поработать из дома? Давай вместе **оформим тебе заявку на работу из дома** на сегодня... или может даже на недельку?:tw-1f60f:;
-"""
 
-GREETING = "*bold* _italic_ `fixed width font` [link](http://google.com)\. 🎉"
 AUTHED_GREETING = "*You are authenticated\!\!\!* _italic_ `fixed width font` [link](http://google.com)\. 🎉 what do you want?"
 
 
@@ -107,11 +99,19 @@ def bop(update, context):
     # print(bsm)
 
 
+
 def hello(update, context):
+    workplace = {'office': 'Kyiv', 'floor': '3', 'number': '300-10', 'type': 'hotdesk', 'options': ['window', 'project_x'], 'constraints': [''], 'coord_x': '1', 'coord_y': '3'}
+    res_info = {'start_date': '06/15/2020', 'end_date': '07/15/2020'}
+    office_ = workplace["office"]
+    OFFICE_SEAT_RESERVATION.format(**workplace,**res_info)
     update.message.reply_text(
         # 'Hello {}'.format(update.message.from_user.first_name))
-        GREETING, parse_mode=ParseMode.MARKDOWN_V2)
-
+        QUARANTINE_WELCOME, parse_mode=ParseMode.MARKDOWN_V2)
+   # workplace = {'office': 'Kyiv', 'floor': '3', 'number': '300-10', 'type': 'hotdesk', 'options': ['window', 'project_x'], 'constraints': [''], 'coord_x': '1', 'coord_y': '3'}
+   # res_info = {'start_date' : '06/15/2020', 'end_date' : '07/15/2020'}
+    #office_ = workplace["office"]
+     #  UC1_SEAT_RESERVATION.format(**workplace,**res_info)
 
 def build_menu(buttons,
                n_cols,
