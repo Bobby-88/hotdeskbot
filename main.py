@@ -11,6 +11,7 @@ from gsheet import *
 from workplace.controller import *
 from bot.functions import *
 import telegramcalendar
+from datetime import datetime
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -18,7 +19,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 # OFFICE, \
-EMAIL, PASSWORD, SUMMARY, BEGIN_MAIN_JOURNEY, MAIN_JOURNEY_2, AUTHED = range(6)
+EMAIL, PASSWORD, SUMMARY, BEGIN_MAIN_JOURNEY, MAIN_JOURNEY_2, AUTHED, HOTDESK_STORY = range(7)
 
 WANNA_WORK = "Хочу поработать"
 BUSINESS_TRIP = "Уезжаю в командос"
@@ -62,6 +63,9 @@ AUTHED_GREETING = "*You are authenticated\!\!\!* _italic_ `fixed width font` [li
 #
 #     update.message.reply_text('Please choose:', reply_markup=reply_markup)
 
+def parse_date(date):
+    d = datetime.strptime(date, 'DAY;%Y;%m;%d')
+    return datetime.strftime(d, '%m/%d/%Y')
 
 def button(update, context):
     query = update.callback_query
@@ -71,6 +75,10 @@ def button(update, context):
     query.answer()
 
     query.edit_message_text(text="Selected option: {}".format(query.data))
+    print(parse_date(query.data))
+    #this is a nice key to understand which date is coming
+    print(query.message.text)
+    question = query.message.text
 
 
 def get_url():
@@ -225,9 +233,12 @@ def identify_next_step_after_auth(update, context):
     chosen_option = update.message.text
     # global email
     # email = update.message.text
+    #this is switching on the base of reply to available options:
     if chosen_option == WANNA_WORK:
-        update.message.reply_text(
-            'Gorgeous! You want to ' + chosen_option + '. Please enter the preferred date in UNIX timestamp format of course:')
+        # update.message.reply_text(
+        #     'Gorgeous! You want to ' + chosen_option + '. Please enter the preferred date in UNIX timestamp format of course:')
+        start_date_calendar_handler(update,context)
+        return HOTDESK_STORY
     elif chosen_option == WANT_BACK_TO_OFFICE:
         update.message.reply_text(
             'Gorgeous! You want to ' + chosen_option)
@@ -331,17 +342,27 @@ def error(update, context):
     logger.warning('Update "%s" caused error "%s"', update, context.error)
 
 
+def start_date_calendar_handler(update, context):
+    update.message.reply_text(text="Please select a start date: ",
+                              reply_markup=telegramcalendar.create_calendar())
+
+def finish_date_calendar_handler(update, context):
+    #print("finish_date: ",update.message.text)
+    update.message.reply_text(text="Please select an end date: ",
+                              reply_markup=telegramcalendar.create_calendar())
+
+
 def calendar_handler(update, context):
     update.message.reply_text(text="Please select a date: ",
                               reply_markup=telegramcalendar.create_calendar())
 
 
-def inline_handler(update, context):
-    selected, date = telegramcalendar.process_calendar_selection(update, context)
-    if selected:
-        context.bot.send_message(chat_id=update.callback_query.from_user.id,
-                                 text="You selected %s" % (date.strftime("%d/%m/%Y")),
-                                 reply_markup=ReplyKeyboardRemove())
+# def inline_handler(update, context):
+#     selected, date = telegramcalendar.process_calendar_selection(update, context)
+#     if selected:
+#         context.bot.send_message(chat_id=update.callback_query.from_user.id,
+#                                  text="You selected %s" % (date.strftime("%d/%m/%Y")),
+#                                  reply_markup=ReplyKeyboardRemove())
 
 
 def main():
@@ -368,7 +389,7 @@ def main():
     dp.add_handler(CallbackQueryHandler(button))
     dp.add_handler(CommandHandler('offices', offices))
     dp.add_handler(CommandHandler("calendar", calendar_handler))
-    dp.add_handler(CallbackQueryHandler(inline_handler))
+    #dp.add_handler(CallbackQueryHandler(inline_handler))
 
     onboarding_handler = ConversationHandler(
         entry_points=[CommandHandler('start', start_auth)],
@@ -382,6 +403,8 @@ def main():
             SUMMARY: [MessageHandler(Filters.text, complete_auth)],
             BEGIN_MAIN_JOURNEY: [MessageHandler(Filters.text, begin_main_journey)],
             MAIN_JOURNEY_2: [MessageHandler(Filters.text, main_journey_2)],
+            HOTDESK_STORY: [MessageHandler(Filters.text, finish_date_calendar_handler)],
+
         },
         fallbacks=[CommandHandler('cancel', cancel)]
     )
