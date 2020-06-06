@@ -18,13 +18,13 @@ class WorkplaceRequest(dict):
     @staticmethod
     def is_valid(data: Union[dict, 'WorkplaceRequest']) -> bool:
         # Distance is int; others - list
-        valid_fields = {"distance", "office", "floor", "number", "type", "options", "constraints", "coord_x", "coord_y"}
+        valid_fields = {"distance", "excluded_ids", "office", "floor", "number", "type", "options", "constraints", "coord_x", "coord_y"}
         data_fields = set(data.keys())
         if not data_fields.issubset(valid_fields):
             logging.info("Invalid fields: {} <-> {}".format(data_fields, valid_fields))
             return False
 
-        list_fields = {"office", "floor", "number", "type", "options", "constraints", "coord_x", "coord_y"}
+        list_fields = {"excluded_ids", "office", "floor", "number", "type", "options", "constraints", "coord_x", "coord_y"}
         for k in list_fields:
             if k in data:
                 v = data[k]
@@ -86,7 +86,6 @@ class Workplace(dict):
                 criteria_match = False
                 for r_v in request[c]:
 
-                    # criteria_match = criteria_match or any(s_v == r_v for s_v in s_value_list)
                     subcriteria_value_list = r_v.split(',')
                     logging.debug(">> Request value: '{}' -> {}".format(r_v, subcriteria_value_list))
 
@@ -124,8 +123,14 @@ class WorkplacePool(dict):
         if type(request) is not WorkplaceRequest:
             request = WorkplaceRequest(request)
 
+        exclided_ids = []
+        if "excluded_ids" in request:
+            exclided_ids = request["excluded_ids"]
+
         r = WorkplacePool()
         for k, v in self.items():
+            if k in exclided_ids:
+                continue
             # This will not consider distance
             if v.matches(request):
                 r[k] = v
@@ -210,13 +215,14 @@ def test() -> None:
 
     print()
     print("== Query result:")
-    # options = pool.get_workplaces({"type": ["hotseat"] })
+    # options = pool.get_workplaces({"type": [WP_TYPE_HOTDESK] })
+    options = pool.get_workplaces({"excluded_ids": ["Kiev-HD-01", "Kiev-HD-03"], "type": [WP_TYPE_HOTDESK] })
     # options = pool.get_workplaces({"floor": ["9", "5"] })
     # options = pool.get_workplaces({"type": [WP_TYPE_HOTDESK], "floor": ["4", "5"] })
     # options = pool.get_workplaces({"options":["window,project_x"]})
     # options = pool.get_workplaces({"distance": 2, "floor": ["3"] })
     # options = pool.get_workplaces({"distance": 3, "floor": ["3"], "options":["project_x"] })
-    options = pool.get_workplaces({"distance": 2, "floor": ["3"], "options":["project_x"] })
+    # options = pool.get_workplaces({"distance": 2, "floor": ["3"], "options":["project_x"] })
     print(options)
 
 
