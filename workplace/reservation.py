@@ -42,7 +42,7 @@ class Reservation(dict):
 
         return True
 
-    def if_reserved(self, date_from: datetime, date_to: datetime, user = None) -> bool:
+    def if_reserved(self, date_from: datetime = None, date_to: datetime = None, user: str = None) -> bool:
         logging.debug("Check if reserved from {} to {} for '{}': {}".format(date_from, date_to, user, self))
 
         if date_from is None:
@@ -93,7 +93,7 @@ class ReservationPool(dict):
                 "reserved_to": row[3],
                 "name": row[4]
             }
-            res_id = data["workplace"] + ":" + data["user"] + ":" + data["reserved_from"] + ":" + data["reserved_to"]
+            res_id = data["workplace"] + ":" + data["user"]
 
             if data["reserved_from"] != "":
                 data["reserved_from"] = datetime.strptime(data["reserved_from"], '%m/%d/%Y')
@@ -117,6 +117,26 @@ class ReservationPool(dict):
 
         return r
 
+    # TODO: consider dublication case
+    def set_reservation(self, reservation: Reservation):
+        res_id = reservation["workplace"] + ":" + reservation["user"]
+
+        self[res_id] = Reservation(reservation)
+
+        # ((reservation["reserved_from"], '%m/%d/%Y').days - datetime.datetime(1899, 12, 30).days),
+        gsheet_start_days = datetime(1899, 12, 30).date()
+        from_days = reservation["reserved_from"].date()
+        data = [
+            reservation["workplace"],
+            reservation["user"],
+            (reservation["reserved_from"].date() - gsheet_start_days).days,
+            (reservation["reserved_to"].date()   - gsheet_start_days).days,
+            reservation["name"],
+        ]
+
+        gsheet.add_reservation(data)
+
+
 ################################################################################
 
 def test() -> None:
@@ -135,6 +155,18 @@ def test() -> None:
     print( pool.get_reservations(datetime(2020, 4, 1), datetime(2020,4, 10)) )
     print()
     print( pool.get_reservations(datetime(2020, 4, 1), datetime(2020,4, 10), "vi2@gmail" ))
+
+    print()
+    res = Reservation( {
+        "workplace": "seat1",
+        "user": "user1",
+        "reserved_from": datetime(2020, 6, 1),
+        "reserved_to": datetime(2020,6,5),
+        "name": "Name"
+    } )
+    print("Adding reservation: {}".format(res))
+    pool.set_reservation(res)
+
 
 if __name__ == '__main__':
     test()
