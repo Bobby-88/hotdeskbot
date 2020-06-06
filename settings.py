@@ -11,3 +11,4 @@ env_path = Path('.') / '.env'
 load_dotenv(dotenv_path=env_path)
 
 TG_TOKEN = os.getenv("TG_TOKEN")
+EMAIL_PWD = os.getenv("EMAIL_PWD")
