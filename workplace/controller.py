@@ -184,8 +184,8 @@ def reserve_quarantine_wp(user_id: str) -> Union[Workplace, None]:
         "name": ""
     } )
     logging.info("Adding reservation:\n{}".format(res))
-    # reservations.set_reservation(res)
-    # logging.info("Reservation completed")
+    reservations.set_reservation(res)
+    logging.info("Reservation completed")
 
     return wp_to_reserve
 
@@ -221,8 +221,8 @@ def reserve_hotdesk(user_id: str, office: str, from_date: datetime, to_date: dat
         "name": ""
     } )
     logging.info("Adding reservation:\n{}".format(res))
-    # reservations.set_reservation(res)
-    # logging.info("Reservation is completed".format(res))
+    reservations.set_reservation(res)
+    logging.info("Reservation is completed".format(res))
 
     return wp_to_reserve
 
