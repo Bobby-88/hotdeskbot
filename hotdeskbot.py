@@ -23,6 +23,8 @@ from telegram import (ReplyKeyboardMarkup, ReplyKeyboardRemove, ParseMode)
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters,
                           ConversationHandler, CallbackQueryHandler)
 import telegramcalendar
+from workplace import controller
+from datetime import datetime
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -84,6 +86,10 @@ def end_date(update, context):
 
 def seat_reservation(update, context):
     update.message.reply_text(responses.OFFICE_SEAT_RESERVATION, parse_mode=ParseMode.MARKDOWN_V2)
+    #this stuff works for hotdesk
+    #controller.reserve_hotdesk("vi@gmail.com","Kyiv",datetime(2020,6,5),datetime(2020,6,10))
+    #this is for quarantine
+    controller.reserve_quarantine_wp("vi@gmail.com")
     return ConversationHandler.END
 
 
@@ -113,13 +119,13 @@ def main():
 
 
     # Add conversation handler with the states GENDER, PHOTO, LOCATION and BIO
-    conv_handler = ConversationHandler(
+    hotdesk_conv_handler = ConversationHandler(
         entry_points=[CommandHandler('start', start)],
 
         states={
             HOT_DESK: [MessageHandler(Filters.text, hotdesk)],
 
-            START_DATE: [MessageHandler(Filters.text, calendar_handler)],
+            START_DATE: [MessageHandler(Filters.text, start_date)],
 
             END_DATE: [MessageHandler(Filters.text, end_date)],
 
@@ -129,7 +135,7 @@ def main():
         fallbacks=[CommandHandler('cancel', cancel)]
     )
 
-    dp.add_handler(conv_handler)
+    dp.add_handler(hotdesk_conv_handler)
 
 
     # log all errors
