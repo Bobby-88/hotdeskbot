@@ -49,10 +49,10 @@ class Reservation(dict):
         logging.debug("Check if reserved from {} to {} for '{}': {}".format(date_from, date_to, user, self))
 
         if date_from is None:
-            date_from = datetime(1, 1, 1)
+            date_from = SOMETIMES_IN_THE_PAST
 
         if date_to is None:
-            date_from = datetime(9999, 12, 31)
+            date_from = SOMETIMES_IN_THE_FUTURE
 
         if date_from > self["reserved_to"]:
             logging.debug(">> NOT reserved: date_from > reserved_to")
@@ -155,22 +155,22 @@ def test() -> None:
     print("== Special query:")
     print( pool.get_reservations(datetime(2020, 6, 1), datetime(2020, 6, 20)) )
 
-    print()
-    print("== Query by user:")
-    print( pool.get_reservations(datetime(2020, 4, 1), datetime(2020,4, 2)) )
-    print()
-    print( pool.get_reservations(datetime(2020, 4, 1), datetime(2020,4, 10)) )
-    print()
-    print( pool.get_reservations(datetime(2020, 4, 1), datetime(2020,4, 10), "vi2@gmail" ))
+    # print()
+    # print("== Query by user:")
+    # print( pool.get_reservations(datetime(2020, 4, 1), datetime(2020,4, 2)) )
+    # print()
+    # print( pool.get_reservations(datetime(2020, 4, 1), datetime(2020,4, 10)) )
+    # print()
+    # print( pool.get_reservations(datetime(2020, 4, 1), datetime(2020,4, 10), "vi2@gmail" ))
 
-    print()
-    res = Reservation( {
-        "workplace": "seat123",
-        "user": "user1",
-        "reserved_from": datetime(2020, 6, 1),
-        "reserved_to": datetime(2020,6,5),
-        "name": "Name"
-    } )
+    # print()
+    # res = Reservation( {
+    #     "workplace": "seat123",
+    #     "user": "user1",
+    #     "reserved_from": datetime(2020, 6, 1),
+    #     "reserved_to": datetime(2020,6,5),
+    #     "name": "Name"
+    # } )
     # print("Adding reservation: {}".format(res))
     # pool.set_reservation(res)
 
