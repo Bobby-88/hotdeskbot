@@ -13,8 +13,8 @@ class User(dict):
         super().__init__(data)
 
     @staticmethod
-    def is_valid(data: Union[dict, 'Reservation']) -> bool:
-        valid_fields = {"email", "password", "office", "tg_id", "name", "preferences"}
+    def is_valid(data: Union[dict, 'User']) -> bool:
+        valid_fields = {"email", "password", "office", "tg_id", "name", "preferences", "owned_wp"}
         data_fields = set(data.keys())
         if not data_fields.issubset(valid_fields):
             logging.info("Invalid fields: {} <-> {}".format(data_fields, valid_fields))
@@ -44,7 +44,7 @@ class UserDB(dict):
     def Load(self) -> None:
         gsheet.open()
         for row in gsheet.get_users():
-            if len(row) != 6:
+            if len(row) != 7:
                 logging.error("Invalid record: {}", row)
                 continue
 
@@ -54,7 +54,8 @@ class UserDB(dict):
                 "office": row[2],
                 "tg_id": row[3],
                 "name": row[4],
-                "preferences": row[5]
+                "preferences": row[5],
+                "owned_wp": row[6]
             }
             user_id = data["email"]
 
@@ -68,6 +69,14 @@ class UserDB(dict):
     def get_user(self, email: str) -> User:
         return self[email]
 
+    def get_user_by_tgid(self, tg_id: str) -> User:
+        for k, v in self.items():
+            if v["tg_id"] == tg_id:
+                return v
+
+        return None
+
+
 ################################################################################
 
 def test() -> None:
@@ -80,8 +89,12 @@ def test() -> None:
     print(pool)
 
     print()
-    print("== Query user:")
-    print( pool.get_user("vi2@gmail.com"))
+    print("== Query by id:")
+    print( pool.get_user("vi@gmail.com"))
+
+    print()
+    print("== Query by Telegram Id:")
+    print( pool.get_user_by_tgid("412037304") )
 
 if __name__ == '__main__':
     test()

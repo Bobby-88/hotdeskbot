@@ -2,7 +2,7 @@ from typing import List, Set, Union
 import logging
 from datetime import datetime
 
-from user.credentials import UserDB
+from user.credentials import User, UserDB
 from workplace.pool import Workplace, WorkplacePool, WorkplaceRequest, WP_TYPE_HOTDESK, WP_TYPE_ASSIGNED
 from workplace.reservation import Reservation, ReservationPool, SOMETIMES_IN_THE_PAST, SOMETIMES_IN_THE_FUTURE
 
@@ -19,28 +19,35 @@ wp_pool.Load()
 reservations = ReservationPool()
 reservations.Load()
 
-def get_workplace_by_user(user_id: str) -> str:
-    pass
+def get_uid_by_tgid(tg_id: str) -> str:
+    global users
+    user = users.get_user_by_tgid(tg_id)
+    return user["email"]
 
-def is_workplace_safe(workplace_id: str) -> bool:
-    return True
 
-def get_safe_workplace() -> str:
-    safe_workplace_id = ''
-    return safe_workplace_id
 
-def get_workplace(workplace_options: list) -> str:
-    workplace_id = ''
-    return workplace_id
-
-def reserve_workplace(workplace_id: str):
-    pass
-
-def workplaces_are_available() -> bool:
-    return True
-
-def user_has_reserved_workplace(user_id: str) -> bool:
-    return False
+# def get_workplace_by_user(user_id: str) -> str:
+#     pass
+#
+# def is_workplace_safe(workplace_id: str) -> bool:
+#     return True
+#
+# def get_safe_workplace() -> str:
+#     safe_workplace_id = ''
+#     return safe_workplace_id
+#
+# def get_workplace(workplace_options: list) -> str:
+#     workplace_id = ''
+#     return workplace_id
+#
+# def reserve_workplace(workplace_id: str):
+#     pass
+#
+# def workplaces_are_available() -> bool:
+#     return True
+#
+# def user_has_reserved_workplace(user_id: str) -> bool:
+#     return False
 
 ################################################################################
 # For INTERNAL use - do not export/import this
@@ -160,8 +167,8 @@ def reserve_quarantine_wp(user_id: str) -> Union[Workplace, None]:
         "name": ""
     } )
     logging.info("Adding reservation: {}".format(res))
-    reservations.set_reservation(res)
-    logging.info("Reservation completed")
+    # reservations.set_reservation(res)
+    # logging.info("Reservation completed")
 
     return wp_to_reserve
 
@@ -197,8 +204,8 @@ def reserve_hotdesk(user_id: str, office: str, from_date: datetime, to_date: dat
         "name": ""
     } )
     logging.info("Adding reservation: {}".format(res))
-    reservations.set_reservation(res)
-    logging.info("Reservation is completed".format(res))
+    # reservations.set_reservation(res)
+    # logging.info("Reservation is completed".format(res))
 
     return wp_to_reserve
 
@@ -207,9 +214,9 @@ def reserve_hotdesk(user_id: str, office: str, from_date: datetime, to_date: dat
 def test() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: ('%(module)s', %(lineno)d) %(message)s")
 
-    reserve_hotdesk('kroz.nn@gmail.com', 'Kyiv', datetime(2020, 6, 1), datetime(2020, 6, 20))
+    # reserve_hotdesk('kroz.nn@gmail.com', 'Kyiv', datetime(2020, 6, 1), datetime(2020, 6, 20))
 
-    # reserve_quarantine_wp('kroz.nn@gmail.com')
+    reserve_quarantine_wp('kroz.nn@gmail.com')
 
 
 if __name__ == '__main__':
