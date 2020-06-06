@@ -38,6 +38,7 @@ GREETING = """
 GREETING = "*bold* _italic_ `fixed width font` [link](http://google.com)\. 🎉"
 AUTHED_GREETING = "*You are authenticated\!\!\!* _italic_ `fixed width font` [link](http://google.com)\. 🎉 what do you want?"
 
+
 # inv_offices = []
 
 # def start(update, context):
@@ -205,7 +206,7 @@ def start_auth(update, context):
         reply_keyboard = [['Хочу поработать', 'Уезжаю в командос', 'Корона? Хочу в офис']]
 
         update.message.reply_text(
-            #'**Access GRANTED**\nHow can i help you?',
+            # '**Access GRANTED**\nHow can i help you?',
             AUTHED_GREETING,
             reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True), parse_mode=ParseMode.MARKDOWN_V2)
         return AUTHED
@@ -221,10 +222,18 @@ def identify_next_step_after_auth(update, context):
     # photo_file = update.message.photo[-1].get_file()
     # photo_file.download('user_photo.jpg')
     logger.info("Choice of %s is: %s", user.first_name, update.message.text)
+    chosen_option = update.message.text
     # global email
     # email = update.message.text
-    update.message.reply_text(
-        'Gorgeous! You want to ' + update.message.text + '. Please enter the preferred date in UNIX timestamp format of course:')
+    if chosen_option == WANNA_WORK:
+        update.message.reply_text(
+            'Gorgeous! You want to ' + chosen_option + '. Please enter the preferred date in UNIX timestamp format of course:')
+    elif chosen_option == WANT_BACK_TO_OFFICE:
+        update.message.reply_text(
+            'Gorgeous! You want to ' + chosen_option)
+    elif chosen_option == BUSINESS_TRIP:
+        update.message.reply_text(
+            'HAPPY BUSINESS TRIP! ' + chosen_option + '. Please enter the preferred date in UNIX timestamp format of course:')
 
     return PASSWORD
 
