@@ -182,11 +182,11 @@ class WorkplacePool(dict):
                 "office": row[1],
                 "floor": row[2],
                 "number": row[3],
-                 "type": row[4],
-                 "options": row[5].split(","),
-                 "constraints": row[6].split(","),
-                 "coord_x": row[7],
-                 "coord_y": row[8]
+                "type": row[4],
+                "options": row[5].split(","),
+                "constraints": row[6].split(","),
+                "coord_x": int(row[7]),
+                "coord_y": int(row[8])
             }
 
             self[wp_id] = Workplace(data)

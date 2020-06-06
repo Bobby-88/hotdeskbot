@@ -1,4 +1,9 @@
+from typing import List
+import logging
 import gspread
+from datetime import datetime
+
+EARLIEST_DATE = datetime(1899, 12, 30) # Date in Google Sheets is a number of days counting from this date
 
 gsheet_name = "Help"
 
@@ -52,6 +57,12 @@ def get_workspaces():
     global t_workplaces
 
     return t_workplaces.get_all_values()[1:]
+
+def add_reservation(values: List[str]) -> None:
+    global t_reservations
+
+    logging.info("Adding line to '{}'/'{}': {}".format(gsheet_name, t_reservations_name, values))
+    t_reservations.append_row(values)
 
 ################################################################################
 

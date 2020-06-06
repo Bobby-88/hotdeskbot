@@ -4,6 +4,9 @@ from datetime import datetime, date
 
 from storage import gsheet
 
+SOMETIMES_IN_THE_PAST = datetime(1, 1, 1)
+SOMETIMES_IN_THE_FUTURE = datetime(9999, 12, 31)
+
 # TODO: all queries shall be linked to specfic office: user is allowed to occupy several places in differen offices
 # TODO: what if user partially occupies the place. Suggestion: update existing record.
 
@@ -42,14 +45,14 @@ class Reservation(dict):
 
         return True
 
-    def if_reserved(self, date_from: datetime, date_to: datetime, user = None) -> bool:
+    def if_reserved(self, date_from: datetime = None, date_to: datetime = None, user: str = None) -> bool:
         logging.debug("Check if reserved from {} to {} for '{}': {}".format(date_from, date_to, user, self))
 
         if date_from is None:
-            date_from = datetime(1, 1, 1)
+            date_from = SOMETIMES_IN_THE_PAST
 
         if date_to is None:
-            date_from = datetime(9999, 12, 31)
+            date_from = SOMETIMES_IN_THE_FUTURE
 
         if date_from > self["reserved_to"]:
             logging.debug(">> NOT reserved: date_from > reserved_to")
@@ -93,18 +96,18 @@ class ReservationPool(dict):
                 "reserved_to": row[3],
                 "name": row[4]
             }
-            res_id = data["workplace"] + ":" + data["user"] + ":" + data["reserved_from"] + ":" + data["reserved_to"]
+            res_id = data["workplace"] + ":" + data["user"]
 
             if data["reserved_from"] != "":
                 data["reserved_from"] = datetime.strptime(data["reserved_from"], '%m/%d/%Y')
             else:
-                data["reserved_from"] = datetime(1, 1, 1)
+                data["reserved_from"] = SOMETIMES_IN_THE_PAST
 
                 # datetime.strptime('Jun 1 2005  1:33PM', '%b %d %Y %I:%M%p')
             if data["reserved_to"] != "":
                 data["reserved_to"] = datetime.strptime(data["reserved_to"], '%m/%d/%Y')
             else:
-                data["reserved_to"] = datetime(9999, 12, 31)
+                data["reserved_to"] = SOMETIMES_IN_THE_FUTURE
 
             self[res_id] = Reservation(data)
 
@@ -117,6 +120,26 @@ class ReservationPool(dict):
 
         return r
 
+    # TODO: consider dublication case
+    def set_reservation(self, reservation: Reservation):
+        res_id = reservation["workplace"] + ":" + reservation["user"]
+
+        self[res_id] = Reservation(reservation)
+
+        # gsheet_start_days = datetime(1899, 12, 30).date()
+        # gsheet_start_days = gsheet.EARLIEST_DATE.date()
+        # from_days = reservation["reserved_from"].date()
+        data = [
+            reservation["workplace"],
+            reservation["user"],
+            (reservation["reserved_from"].date() - gsheet.EARLIEST_DATE.date()).days,
+            (reservation["reserved_to"].date()   - gsheet.EARLIEST_DATE.date()).days,
+            reservation["name"],
+        ]
+
+        gsheet.add_reservation(data)
+
+
 ################################################################################
 
 def test() -> None:
@@ -127,14 +150,30 @@ def test() -> None:
 
     print("== Whole pool:")
     print(pool)
+    print()
 
-    print()
-    print("== Query by user:")
-    print( pool.get_reservations(datetime(2020, 4, 1), datetime(2020,4, 2)) )
-    print()
-    print( pool.get_reservations(datetime(2020, 4, 1), datetime(2020,4, 10)) )
-    print()
-    print( pool.get_reservations(datetime(2020, 4, 1), datetime(2020,4, 10), "vi2@gmail" ))
+    print("== Special query:")
+    print( pool.get_reservations(datetime(2020, 6, 1), datetime(2020, 6, 20)) )
+
+    # print()
+    # print("== Query by user:")
+    # print( pool.get_reservations(datetime(2020, 4, 1), datetime(2020,4, 2)) )
+    # print()
+    # print( pool.get_reservations(datetime(2020, 4, 1), datetime(2020,4, 10)) )
+    # print()
+    # print( pool.get_reservations(datetime(2020, 4, 1), datetime(2020,4, 10), "vi2@gmail" ))
+
+    # print()
+    # res = Reservation( {
+    #     "workplace": "seat123",
+    #     "user": "user1",
+    #     "reserved_from": datetime(2020, 6, 1),
+    #     "reserved_to": datetime(2020,6,5),
+    #     "name": "Name"
+    # } )
+    # print("Adding reservation: {}".format(res))
+    # pool.set_reservation(res)
+
 
 if __name__ == '__main__':
     test()
