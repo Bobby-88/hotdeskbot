@@ -138,7 +138,10 @@ def reserve_quarantine_wp(user_id: str) -> Union[Workplace, None]:
     from_date = QUARANTINE_EASING_START
     to_date =  QUARANTINE_EASING_END
 
-    office = "Kyiv"
+    user = users.get_user(user_id)
+    logging.debug("User:\n{}".format(user))
+    # office = "Kyiv"
+    office = user["office"]
 
     criteria = WorkplaceRequest(
         {
@@ -155,9 +158,23 @@ def reserve_quarantine_wp(user_id: str) -> Union[Workplace, None]:
         return None
 
     # Choosing specific place
-    wp_to_reserve_key = list(available_wp.keys())[0]
+    wp_to_reserve_key = None
+
+    wp_key = user["owned_wp"]
+    if wp_key != "":
+        if wp_key in available_wp:
+            logging.info("User assigned workplace WILL BE USED: '{}'".format(wp_key))
+            wp_to_reserve_key = wp_key
+        else:
+            logging.info("User assigned workplace occupied/UNSAFE: '{}'".format(wp_key))
+    else:
+        logging.info("User has NO assigned workplace")
+
+    if wp_to_reserve_key is None:
+        wp_to_reserve_key = list(available_wp.keys())[0]
+
     wp_to_reserve = available_wp[ wp_to_reserve_key ]
-    logging.info("Workplace to reserve: {}".format(wp_to_reserve) )
+    logging.info("Workplace to reserve:\n'{}': {}".format(wp_to_reserve_key, wp_to_reserve) )
 
     res = Reservation( {
         "workplace": wp_to_reserve_key,
@@ -166,7 +183,7 @@ def reserve_quarantine_wp(user_id: str) -> Union[Workplace, None]:
         "reserved_to": to_date,
         "name": ""
     } )
-    logging.info("Adding reservation: {}".format(res))
+    logging.info("Adding reservation:\n{}".format(res))
     # reservations.set_reservation(res)
     # logging.info("Reservation completed")
 
@@ -194,7 +211,7 @@ def reserve_hotdesk(user_id: str, office: str, from_date: datetime, to_date: dat
     # Choosing specific place
     wp_to_reserve_key = list(available_wp.keys())[0]
     wp_to_reserve = available_wp[ wp_to_reserve_key ]
-    logging.info("Workplace to reserve: {}".format(wp_to_reserve) )
+    logging.info("Workplace to reserve:\n'{}': {}".format(wp_to_reserve_key, wp_to_reserve) )
 
     res = Reservation( {
         "workplace": wp_to_reserve_key,
@@ -203,7 +220,7 @@ def reserve_hotdesk(user_id: str, office: str, from_date: datetime, to_date: dat
         "reserved_to": to_date,
         "name": ""
     } )
-    logging.info("Adding reservation: {}".format(res))
+    logging.info("Adding reservation:\n{}".format(res))
     # reservations.set_reservation(res)
     # logging.info("Reservation is completed".format(res))
 
