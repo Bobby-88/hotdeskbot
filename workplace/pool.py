@@ -2,6 +2,10 @@ from typing import List, Set, Union # https://mypy.readthedocs.io/en/stable/chea
 import logging
 import math
 
+from storage import gsheet
+
+# TODO: Consideration of constraints
+
 WP_TYPE_HOTDESK = "hotdesk"
 WP_TYPE_ASSIGNED = "assigned"
 FAR_AWAY = 99999
@@ -166,6 +170,27 @@ class WorkplacePool(dict):
     def get_floors(self, request: Union[dict, WorkplaceRequest] = {}) -> Set[str]:
         return self.__get_unique_values(request, "floor")
 
+    def Load(self) -> None:
+        gsheet.open()
+        for row in gsheet.get_workspaces():
+            if len(row) != 9:
+                logging.error("Invalid record: {}", row)
+                continue
+
+            wp_id = row[0]
+            data = {
+                "office": row[1],
+                "floor": row[2],
+                "number": row[3],
+                 "type": row[4],
+                 "options": row[5].split(","),
+                 "constraints": row[6].split(","),
+                 "coord_x": row[7],
+                 "coord_y": row[8]
+            }
+
+            self[wp_id] = Workplace(data)
+
     # For testing needs only
     def LoadTest(self) -> None:
         logging.warning("Loading test data")
@@ -182,13 +207,15 @@ class WorkplacePool(dict):
         self["Kiev-HD-10"] = Workplace( { "office": "Kiev",   "floor": "3", "number": "505-10", "type": WP_TYPE_ASSIGNED, "options": [                                ], "constraints": [], "coord_x": 2, "coord_y": 2 } )
         self["Kiev-HD-11"] = Workplace( { "office": "Kiev",   "floor": "3", "number": "505-10", "type": WP_TYPE_ASSIGNED, "options": [                     "project_x"], "constraints": [], "coord_x": 1, "coord_y": 3 } )
 
+################################################################################
+
 def test() -> None:
     # CRITICAL, ERROR, WARNING, INFO, DEBUG, NOTSET - https://docs.python.org/3/library/logging.html#logging-levels
     # logging.basicConfig(level=logging.NOTSET, format="%(levelname)s: ('%(module)s', %(lineno)d) %(message)s")
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: ('%(module)s', %(lineno)d) %(message)s")
 
     pool = WorkplacePool()
-    pool.LoadTest()
+    pool.Load()
 
     print("== Whole pool:")
     print(pool)
