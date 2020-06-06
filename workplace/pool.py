@@ -6,8 +6,6 @@ WP_TYPE_HOTDESK = "hotdesk"
 WP_TYPE_ASSIGNED = "assigned"
 FAR_AWAY = 99999
 
-# TODO: Coronavirus case
-
 class WorkplaceRequest(dict):
     def __init__(self, data):
         if not self.is_valid(data):
@@ -183,19 +181,6 @@ class WorkplacePool(dict):
         self["Kiev-HD-09"] = Workplace( { "office": "Kiev",   "floor": "3", "number": "505-09", "type": WP_TYPE_ASSIGNED, "options": [                                ], "constraints": [], "coord_x": 1, "coord_y": 2 } )
         self["Kiev-HD-10"] = Workplace( { "office": "Kiev",   "floor": "3", "number": "505-10", "type": WP_TYPE_ASSIGNED, "options": [                                ], "constraints": [], "coord_x": 2, "coord_y": 2 } )
         self["Kiev-HD-11"] = Workplace( { "office": "Kiev",   "floor": "3", "number": "505-10", "type": WP_TYPE_ASSIGNED, "options": [                     "project_x"], "constraints": [], "coord_x": 1, "coord_y": 3 } )
-
-# TODO
-def get_seat():
-    pass
-
-# TODO
-def make_greeting_message() -> str:
-    # CSS
-    pass
-
-# TODO
-def make_result_message() -> str:
-    pass
 
 def test() -> None:
     # CRITICAL, ERROR, WARNING, INFO, DEBUG, NOTSET - https://docs.python.org/3/library/logging.html#logging-levels
