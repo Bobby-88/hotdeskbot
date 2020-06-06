@@ -155,22 +155,22 @@ def test() -> None:
     print("== Special query:")
     print( pool.get_reservations(datetime(2020, 6, 1), datetime(2020, 6, 20)) )
 
-    print()
-    print("== Query by user:")
-    print( pool.get_reservations(datetime(2020, 4, 1), datetime(2020,4, 2)) )
-    print()
-    print( pool.get_reservations(datetime(2020, 4, 1), datetime(2020,4, 10)) )
-    print()
-    print( pool.get_reservations(datetime(2020, 4, 1), datetime(2020,4, 10), "vi2@gmail" ))
+    # print()
+    # print("== Query by user:")
+    # print( pool.get_reservations(datetime(2020, 4, 1), datetime(2020,4, 2)) )
+    # print()
+    # print( pool.get_reservations(datetime(2020, 4, 1), datetime(2020,4, 10)) )
+    # print()
+    # print( pool.get_reservations(datetime(2020, 4, 1), datetime(2020,4, 10), "vi2@gmail" ))
 
-    print()
-    res = Reservation( {
-        "workplace": "seat123",
-        "user": "user1",
-        "reserved_from": datetime(2020, 6, 1),
-        "reserved_to": datetime(2020,6,5),
-        "name": "Name"
-    } )
+    # print()
+    # res = Reservation( {
+    #     "workplace": "seat123",
+    #     "user": "user1",
+    #     "reserved_from": datetime(2020, 6, 1),
+    #     "reserved_to": datetime(2020,6,5),
+    #     "name": "Name"
+    # } )
     # print("Adding reservation: {}".format(res))
     # pool.set_reservation(res)
 
