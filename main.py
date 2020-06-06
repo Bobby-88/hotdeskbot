@@ -387,10 +387,10 @@ def main():
     # bootstrapping telegram bot
     updater = Updater(TG_TOKEN, use_context=True)
     dp = updater.dispatcher
-    print("get_lists(sheet, 'Credentials') output:")
-    print(get_lists(sheet, "Credentials"))
-    add_row(sheet, "Credentials", ["first", "second", "third for love"])
-    update_row(sheet, "Credentials", "first", 2, "new")
+    #print("get_lists(sheet, 'Credentials') output:")
+    #print(get_lists(sheet, "Credentials"))
+    #add_row(sheet, "Credentials", ["first", "second", "third for love"])
+    #update_row(sheet, "Credentials", "first", 2, "new")
 
     dp.add_handler(CommandHandler('bop', bop))
     dp.add_handler(CommandHandler('hello', hello))
