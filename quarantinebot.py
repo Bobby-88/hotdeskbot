@@ -1,10 +1,10 @@
 import logging
 
-from telegram import (ReplyKeyboardMarkup, ReplyKeyboardRemove)
+from telegram import (ReplyKeyboardMarkup, ReplyKeyboardRemove, ParseMode)
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters,
                           ConversationHandler)
 from settings import TG_TOKEN
-from bot import responds
+from bot import responses
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -18,7 +18,7 @@ RESERVAION_RESULT, QUARANTINE_EXIT, LOCATION = range(3)
 def start(update, context):
     reply_keyboard = [['Выйти в офис🏢']]
     update.message.reply_text(
-        responds.GREETING,
+        responses.GREETING, parse_mode=ParseMode.MARKDOWN_V2,
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
 
     return QUARANTINE_EXIT
@@ -26,21 +26,21 @@ def start(update, context):
 def quarantine_exit(update, context):
     reply_keyboard = [['Конечно хочу! 🏢']]
     update.message.reply_text(
-        responds.UC2_WELCOME,
+        responses.QUARANTINE_WELCOME, parse_mode=ParseMode.MARKDOWN_V2,
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
 
     return RESERVAION_RESULT
 
 
 def reservation_result(update, context):
-    update.message.reply_text(responds.UC2_YES)
+    update.message.reply_text(responses.QUARANTINE_YES)
     return ConversationHandler.END
 
 
 def cancel(update, context):
     user = update.message.from_user
     logger.info("User %s canceled the conversation.", user.first_name)
-    update.message.reply_text('Пока До встречи',
+    update.message.reply_text('Пока До встречи', parse_mode=ParseMode.MARKDOWN_V2, 
                               reply_markup=ReplyKeyboardRemove())
 
     return ConversationHandler.END

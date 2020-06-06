@@ -17,9 +17,9 @@ bot.
 import logging
 import telegramcalendar
 from settings import TG_TOKEN
-from bot import responds
+from bot import responses
 
-from telegram import (ReplyKeyboardMarkup, ReplyKeyboardRemove)
+from telegram import (ReplyKeyboardMarkup, ReplyKeyboardRemove, ParseMode)
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters,
                           ConversationHandler)
 
@@ -33,9 +33,9 @@ START_DATE, END_DATE, SEAT_RELEASE, BUSINESS_TRIP = range(4)
 
 
 def start(update, context):
-    reply_keyboard = [[responds.BUTTON_3]]
+    reply_keyboard = [[responses.BUTTON_FLIGHT]]
     update.message.reply_text(
-        responds.GREETING,
+        responses.GREETING, parse_mode=ParseMode.MARKDOWN_V2,
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
 
     return BUSINESS_TRIP
@@ -43,7 +43,7 @@ def start(update, context):
 def business_trip(update, context):
     reply_keyboard = [['ОК']]
     update.message.reply_text(
-        responds.UC1_WELCOME,
+        responses.FLIGHT_WELCOME, parse_mode=ParseMode.MARKDOWN_V2,
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
 
     return START_DATE
@@ -53,7 +53,7 @@ def start_date(update, context):
     user = update.message.from_user
     reply_keyboard = [['start date']]
     logger.info("start date")
-    update.message.reply_text(text=responds.UC3_START_DATE,
+    update.message.reply_text(text=responses.FLIGHT_START_DATE, parse_mode=ParseMode.MARKDOWN_V2,
                               reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
 
     return END_DATE
@@ -63,21 +63,21 @@ def end_date(update, context):
     user = update.message.from_user
     reply_keyboard = [['end date']]
     logger.info("end date")
-    update.message.reply_text(text=responds.UC3_END_DATE,
+    update.message.reply_text(text=responses.FLIGHT_END_DATE, parse_mode=ParseMode.MARKDOWN_V2,
                               reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
 
     return SEAT_RELEASE
 
 
 def seat_release(update, context):
-    update.message.reply_text(responds.UC3_SEAT_RELEASE)
+    update.message.reply_text(responses.FLIGHT_SEAT_RELEASE)
     return ConversationHandler.END
 
 
 def cancel(update, context):
     user = update.message.from_user
     logger.info("User %s canceled the conversation.", user.first_name)
-    update.message.reply_text('Bye! I hope we can talk again some day.',
+    update.message.reply_text('Bye! I hope we can talk again some day.', parse_mode=ParseMode.MARKDOWN_V2,
                               reply_markup=ReplyKeyboardRemove())
 
     return ConversationHandler.END
