@@ -20,7 +20,7 @@ def open() -> None:
     global t_workplaces
 
     if gsheet is None:
-        gc = gspread.service_account(filename='../gsheet-credentials.json')
+        gc = gspread.service_account(filename='gsheet-credentials.json')
         gsheet = gc.open(gsheet_name)
         if gsheet is None:
             raise RuntimeError("Cannot open Google Sheet: '{}'".format(gsheet_name))
