@@ -4,6 +4,9 @@ from datetime import datetime, date
 
 from storage import gsheet
 
+SOMETIMES_IN_THE_PAST = datetime(1, 1, 1)
+SOMETIMES_IN_THE_FUTURE = datetime(9999, 12, 31)
+
 # TODO: all queries shall be linked to specfic office: user is allowed to occupy several places in differen offices
 # TODO: what if user partially occupies the place. Suggestion: update existing record.
 
@@ -98,13 +101,13 @@ class ReservationPool(dict):
             if data["reserved_from"] != "":
                 data["reserved_from"] = datetime.strptime(data["reserved_from"], '%m/%d/%Y')
             else:
-                data["reserved_from"] = datetime(1, 1, 1)
+                data["reserved_from"] = SOMETIMES_IN_THE_PAST
 
                 # datetime.strptime('Jun 1 2005  1:33PM', '%b %d %Y %I:%M%p')
             if data["reserved_to"] != "":
                 data["reserved_to"] = datetime.strptime(data["reserved_to"], '%m/%d/%Y')
             else:
-                data["reserved_to"] = datetime(9999, 12, 31)
+                data["reserved_to"] = SOMETIMES_IN_THE_FUTURE
 
             self[res_id] = Reservation(data)
 
@@ -123,14 +126,14 @@ class ReservationPool(dict):
 
         self[res_id] = Reservation(reservation)
 
-        # ((reservation["reserved_from"], '%m/%d/%Y').days - datetime.datetime(1899, 12, 30).days),
-        gsheet_start_days = datetime(1899, 12, 30).date()
-        from_days = reservation["reserved_from"].date()
+        # gsheet_start_days = datetime(1899, 12, 30).date()
+        # gsheet_start_days = gsheet.EARLIEST_DATE.date()
+        # from_days = reservation["reserved_from"].date()
         data = [
             reservation["workplace"],
             reservation["user"],
-            (reservation["reserved_from"].date() - gsheet_start_days).days,
-            (reservation["reserved_to"].date()   - gsheet_start_days).days,
+            (reservation["reserved_from"].date() - gsheet.EARLIEST_DATE.date()).days,
+            (reservation["reserved_to"].date()   - gsheet.EARLIEST_DATE.date()).days,
             reservation["name"],
         ]
 

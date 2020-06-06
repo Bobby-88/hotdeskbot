@@ -1,6 +1,9 @@
 from typing import List
 import logging
 import gspread
+from datetime import datetime
+
+EARLIEST_DATE = datetime(1899, 12, 30) # Date in Google Sheets is a number of days counting from this date
 
 gsheet_name = "Help"
 
