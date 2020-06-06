@@ -1,7 +1,13 @@
+from typing import List, Set, Union
 import logging
+from datetime import datetime
+
+from user.credentials import UserDB
 from workplace.pool import Workplace, WorkplacePool, WorkplaceRequest, WP_TYPE_HOTDESK
 from workplace.reservation import Reservation, ReservationPool
-from datetime import datetime
+
+users = UserDB()
+users.Load()
 
 wp_pool = WorkplacePool()
 wp_pool.Load()
@@ -33,7 +39,10 @@ def user_has_reserved_workplace(user_id: str) -> bool:
     return False
 
 ################################################################################
-def reserve_hotdesk(user, office, from_date, to_date,  preferences) -> Workplace:
+# TODO: get preferences from user
+def reserve_hotdesk(user_id, office, from_date, to_date) -> Union[Workplace, None]:
+    user = users.get_user(user_id)
+
     reserved_wp = reservations.get_reservations(from_date, to_date)
     logging.info("Existing reservations to the dates:\n{}".format(reserved_wp))
 
@@ -48,13 +57,15 @@ def reserve_hotdesk(user, office, from_date, to_date,  preferences) -> Workplace
             "excluded_ids": list(exception_list),
         }
     )
-    if preferences is None or preferences == "":
-        preferences = {}
-    req.update(preferences)
-    logging.info("Workplace request:{}".format (req) )
+
+    logging.info("User preferencs: {}".format(user["preferences"]) )
+    req.update(user["preferences"])
+
+    logging.info("Workplace request: {}".format(req) )
+
     # available_wp = wp_pool.get_workplaces({"excluded_ids": list(exception_list), "type": [WP_TYPE_HOTDESK] , "office": ["Kyiv"], "floor": ["3"]})
     available_wp = wp_pool.get_workplaces(req)
-    logging.info("Workplaces available to the user:\n{}".format (available_wp) )
+    logging.info("Workplaces available to the user:\n{}".format(available_wp) )
 
     if len(available_wp) == 0:
         logging.info("No place to reserve")
@@ -66,7 +77,7 @@ def reserve_hotdesk(user, office, from_date, to_date,  preferences) -> Workplace
 
     res = Reservation( {
         "workplace": wp_to_reserve_key,
-        "user": user,
+        "user": user_id,
         "reserved_from": from_date,
         "reserved_to": to_date,
         "name": ""
@@ -82,9 +93,8 @@ def reserve_hotdesk(user, office, from_date, to_date,  preferences) -> Workplace
 def test() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: ('%(module)s', %(lineno)d) %(message)s")
 
-    print("== Query workplaces")
-    # reserve_hotdesk("know.nn@gmail.com", "Kyiv", datetime(2020, 6, 1), datetime(2020, 6, 20), {"floor": ["3"]})
-    reserve_hotdesk("know.nn@gmail.com", "Kyiv", datetime(2020, 6, 1), datetime(2020, 6, 20), {"floor": ["3"], "options":["project_x"]})
+    # old - reserve_hotdesk("know.nn@gmail.com", "Kyiv", datetime(2020, 6, 1), datetime(2020, 6, 20), {"floor": ["3"]})
+    reserve_hotdesk('kroz.nn@gmail.com', 'Kyiv', datetime(2020, 6, 1), datetime(2020, 6, 20))
 
 
 if __name__ == '__main__':

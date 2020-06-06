@@ -1,6 +1,7 @@
 from typing import List, Set, Union # https://mypy.readthedocs.io/en/stable/cheat_sheet_py3.html
 import logging
 from datetime import datetime, date
+import json
 
 from storage import gsheet
 
@@ -56,6 +57,11 @@ class UserDB(dict):
                 "preferences": row[5]
             }
             user_id = data["email"]
+
+            if data["preferences"] == "":
+                data["preferences"] = {}
+            else:
+                data["preferences"] = json.loads(data["preferences"])
 
             self[user_id] = User(data)
 
