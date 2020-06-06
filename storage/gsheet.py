@@ -58,7 +58,7 @@ def get_workspaces():
 def add_reservation(values: List[str]) -> None:
     global t_reservations
 
-    logging.info("Adding line to '{}'/'{}': ".format(gsheet_name, t_reservations_name, values))
+    logging.info("Adding line to '{}'/'{}': {}".format(gsheet_name, t_reservations_name, values))
     t_reservations.append_row(values)
 
 ################################################################################
