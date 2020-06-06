@@ -81,8 +81,10 @@ def button(update, context):
     question = query.message.text
     if question == "Please select a start date:":
         print("reading start date")
-    elif question == "end":
+    elif question == "Please select an end date:":
         print("reading end date")
+        bop(update,context)
+
 
 
 def get_url():
@@ -242,6 +244,7 @@ def identify_next_step_after_auth(update, context):
         # update.message.reply_text(
         #     'Gorgeous! You want to ' + chosen_option + '. Please enter the preferred date in UNIX timestamp format of course:')
         start_date_calendar_handler(update,context)
+        finish_date_calendar_handler(update,context)
         return HOTDESK_STORY
     elif chosen_option == WANT_BACK_TO_OFFICE:
         update.message.reply_text(
@@ -347,13 +350,13 @@ def error(update, context):
 
 
 def start_date_calendar_handler(update, context):
-    update.message.reply_text(text="Please select a start date: ",
+    update.message.reply_text(text="Please select a start date:",
                               reply_markup=telegramcalendar.create_calendar())
     return
 
 def finish_date_calendar_handler(update, context):
     #print("finish_date: ",update.message.text)
-    update.message.reply_text(text="Please select an end date: ",
+    update.message.reply_text(text="Please select an end date:",
                               reply_markup=telegramcalendar.create_calendar())
     return
 
@@ -409,7 +412,7 @@ def main():
             SUMMARY: [MessageHandler(Filters.text, complete_auth)],
             BEGIN_MAIN_JOURNEY: [MessageHandler(Filters.text, begin_main_journey)],
             MAIN_JOURNEY_2: [MessageHandler(Filters.text, main_journey_2)],
-            HOTDESK_STORY: [MessageHandler(Filters.text, finish_date_calendar_handler)],
+            HOTDESK_STORY: [MessageHandler(Filters.text, hello)],
 
         },
         fallbacks=[CommandHandler('cancel', cancel)]
