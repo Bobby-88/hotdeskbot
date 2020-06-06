@@ -118,7 +118,7 @@ class WorkplacePool(dict):
         for k, v in self.items():
             if r != "":
                 r = r + "\n"
-            r = r + "{}: {}".format(k, v)
+            r = r + "'{}': {}".format(k, v)
         return r
 
     def get_workplaces(self, request: Union[dict, WorkplaceRequest] = {}) -> 'WorkplacePool':
@@ -236,9 +236,6 @@ def test() -> None:
     # options = pool.get_workplaces({"distance": 3, "floor": ["3"], "options":["project_x"] })
     # options = pool.get_workplaces({"distance": 2, "floor": ["3"], "options":["project_x"] })
     print(options)
-
-
-###
 
 
 if __name__ == '__main__':

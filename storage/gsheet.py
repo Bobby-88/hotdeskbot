@@ -1,8 +1,10 @@
 import gspread
 
 gsheet_name = "Help"
+
+# Tables:
 t_users_name = "Credentials" # User id, telegram id, ...
-t_reservations_name = "Reservations" # Who, period
+t_reservations_name = "RESERVATIONS" # Who, period
 t_workplaces_name = "Workplaces" # Seat id, office-floor-number, features, coordinates
 # t_workplaces_name = "Desks" # Seat id, office-floor-number, features, coordinates
 
@@ -13,13 +15,38 @@ t_workplaces = None
 
 def open() -> None:
     global gsheet
+    global t_users
+    global t_reservations
     global t_workplaces
 
-    if gsheet == None:
+    if gsheet is None:
         gc = gspread.service_account(filename='../gsheet-credentials.json')
         gsheet = gc.open(gsheet_name)
+        if gsheet is None:
+            raise RuntimeError("Cannot open Google Sheet: '{}'".format(gsheet_name))
+
+    t_users = gsheet.worksheet(t_users_name)
+    if t_users is None:
+        raise RuntimeError("Cannot open Google Sheet for users: '{}'/'{}'".format(gsheet_name, t_users_name))
+
+    t_reservations = gsheet.worksheet(t_reservations_name)
+    if t_reservations is None:
+        raise RuntimeError("Cannot open Google Sheet for reservations: '{}'/'{}'".format(gsheet_name, t_reservations_name))
 
     t_workplaces = gsheet.worksheet(t_workplaces_name)
+    if t_workplaces is None:
+        raise RuntimeError("Cannot open Google Sheet workplaces: '{}'/'{}'".format(gsheet_name, t_workplaces_name))
+
+
+def get_users():
+    global t_users
+
+    return t_users.get_all_values()[1:]
+
+def get_reservations():
+    global t_reservations
+
+    return t_reservations.get_all_values()[1:]
 
 def get_workspaces():
     global t_workplaces
@@ -29,10 +56,22 @@ def get_workspaces():
 ################################################################################
 
 def test() -> None:
-    print("== Content of '{}'/'{}' sheet:".format(gsheet_name, t_workplaces_name))
     open()
-    v = get_workspaces()[1:]
+
+    print("== Content of '{}'/'{}' sheet:".format(gsheet_name, t_users_name))
+    v = get_users()
     print(v)
+
+    print()
+    print("== Content of '{}'/'{}' sheet:".format(gsheet_name, t_reservations_name))
+    v = get_reservations()
+    print(v)
+
+    print()
+    print("== Content of '{}'/'{}' sheet:".format(gsheet_name, t_workplaces_name))
+    v = get_workspaces()
+    print(v)
+
 
 # ###########################
 #
