@@ -36,7 +36,7 @@ GREETING = """
 """
 
 GREETING = "*bold* _italic_ `fixed width font` [link](http://google.com)\. 🎉"
-
+AUTHED_GREETING = "*You are authenticated\!\!\!* _italic_ `fixed width font` [link](http://google.com)\. 🎉 what do you want?"
 
 # inv_offices = []
 
@@ -205,9 +205,8 @@ def start_auth(update, context):
         reply_keyboard = [['Хочу поработать', 'Уезжаю в командос', 'Корона? Хочу в офис']]
 
         update.message.reply_text(
-            '**Access GRANTED**'
-            '\n'
-            'How can i help you?',
+            #'**Access GRANTED**\nHow can i help you?',
+            AUTHED_GREETING,
             reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True), parse_mode=ParseMode.MARKDOWN_V2)
         return AUTHED
     else:
