@@ -43,6 +43,7 @@ def user_has_reserved_workplace(user_id: str) -> bool:
     return False
 
 ################################################################################
+# For INTERNAL use - do not export/import this
 def get_availabile_wp(from_date: datetime, to_date: datetime, criteria: WorkplaceRequest, min_distance = 0) -> Union[WorkplacePool, None]:
     ### What is already occupied for the dates
     existing_reservations = reservations.get_reservations(from_date, to_date)
@@ -121,6 +122,11 @@ def get_availabile_wp(from_date: datetime, to_date: datetime, criteria: Workplac
 
     return available_wp
 
+# For external use
+def release_wp(user_id: str, from_date: datetime, to_date: datetime) -> None:
+    pass
+
+# For external use
 def reserve_quarantine_wp(user_id: str) -> Union[Workplace, None]:
     from_date = QUARANTINE_EASING_START
     to_date =  QUARANTINE_EASING_END
@@ -159,7 +165,7 @@ def reserve_quarantine_wp(user_id: str) -> Union[Workplace, None]:
 
     return wp_to_reserve
 
-
+# For external use
 def reserve_hotdesk(user_id: str, office: str, from_date: datetime, to_date: datetime) -> Union[Workplace, None]:
     user = users.get_user(user_id)
 
