@@ -7,7 +7,6 @@ from storage import gsheet
 # TODO: all queries shall be linked to specfic office: user is allowed to occupy several places in differen offices
 # TODO: what if user partially occupies the place. Suggestion: update existing record.
 
-
 class Reservation(dict):
     def __init__(self, data):
         if not self.is_valid(data):
@@ -40,6 +39,31 @@ class Reservation(dict):
         if data["reserved_from"] > data["reserved_to"]:
             logging.info("'reserved_from' > 'reserved_to': {} > {}".format( data["reserved_from"], data["reserved_to"]))
             return False
+
+        return True
+
+    def if_reserved(self, date_from: datetime, date_to: datetime, user = None) -> bool:
+        logging.debug("Check if reserved from {} to {} for '{}': {}".format(date_from, date_to, user, self))
+
+        if date_from is None:
+            date_from = datetime(1, 1, 1)
+
+        if date_to is None:
+            date_from = datetime(9999, 12, 31)
+
+        if date_from > self["reserved_to"]:
+            logging.debug(">> NOT reserved: date_from > reserved_to")
+            return False
+
+        if date_to < self["reserved_from"]:
+            logging.debug(">> NOT reserved: date_to < reserved_from")
+            return False
+
+        if user is not None and user != self["user"]:
+            logging.debug(">> NOT reserved: user does not match")
+            return False
+
+        logging.debug(">> RESERVED")
 
         return True
 
@@ -84,33 +108,14 @@ class ReservationPool(dict):
 
             self[res_id] = Reservation(data)
 
-    def if_reserved_to_user(self, user: str, date_from: datetime, date_to: datetime) -> bool:
-        logging.debug("Check if reserved from {} to {} by '{}'".format(date_from, date_to, user))
-
-        if date_from is None:
-            date_from = datetime(1, 1, 1)
-
-        if date_to is None:
-            date_from = datetime(9999, 12, 31)
+    def get_reservations(self, date_from: datetime, date_to: datetime, user = None) -> 'ReservationPool':
+        r = ReservationPool()
 
         for k, v in self.items():
-            logging.debug(">> Record: {}".format(v))
+            if v.if_reserved(date_from, date_to, user):
+                r[k] = v
 
-            if date_from > v["reserved_to"]:
-                logging.debug(">> ... date_from skips")
-                continue
-
-            if date_to < v["reserved_from"]:
-                logging.debug(">> ... date_to skips")
-                continue
-
-            if user == v["user"]:
-                logging.debug(">> Found!")
-                return k
-
-            logging.debug(">> User does not match")
-
-        return None
+        return r
 
 ################################################################################
 
@@ -125,9 +130,11 @@ def test() -> None:
 
     print()
     print("== Query by user:")
-    print( pool.if_reserved_to_user("vi2@gmail", datetime(2020, 4, 1), datetime(2020,4, 10)) )
-    print( pool.if_reserved_to_user("vi2@gmail", datetime(2020, 4, 1), datetime(2020,4, 2)) )
-
+    print( pool.get_reservations(datetime(2020, 4, 1), datetime(2020,4, 2)) )
+    print()
+    print( pool.get_reservations(datetime(2020, 4, 1), datetime(2020,4, 10)) )
+    print()
+    print( pool.get_reservations(datetime(2020, 4, 1), datetime(2020,4, 10), "vi2@gmail" ))
 
 if __name__ == '__main__':
     test()
