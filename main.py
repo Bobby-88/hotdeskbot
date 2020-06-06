@@ -79,6 +79,10 @@ def button(update, context):
     #this is a nice key to understand which date is coming
     print(query.message.text)
     question = query.message.text
+    if question == "Please select a start date:":
+        print("reading start date")
+    elif question == "end":
+        print("reading end date")
 
 
 def get_url():
@@ -345,11 +349,13 @@ def error(update, context):
 def start_date_calendar_handler(update, context):
     update.message.reply_text(text="Please select a start date: ",
                               reply_markup=telegramcalendar.create_calendar())
+    return
 
 def finish_date_calendar_handler(update, context):
     #print("finish_date: ",update.message.text)
     update.message.reply_text(text="Please select an end date: ",
                               reply_markup=telegramcalendar.create_calendar())
+    return
 
 
 def calendar_handler(update, context):
