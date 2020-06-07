@@ -1,7 +1,7 @@
 from telegram.ext import Updater, CommandHandler
 import requests
 import re
-from settings import TG_TOKEN
+from settings import Q_TG_TOKEN
 import logging
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup, \
     ReplyKeyboardRemove, ParseMode
@@ -70,13 +70,13 @@ def button(update, context):
     # this is a nice key to understand which date is coming
     print(query.message.text)
     question = query.message.text
-    print("q:",question)
+    print("q:", question)
     global wp_number
-    wp_number = "Kiev\-513\-1"
+    wp_number = "Kiev\-182\-4"
     if question[6] == responses.OFFICE_START_DATE[6]:
         print("reading start date")
         global start_date
-        start_date=parse_date(query.data)
+        start_date = parse_date(query.data)
     elif question[6] == responses.OFFICE_END_DATE[6]:
         print("reading end date")
         global end_date
@@ -94,7 +94,7 @@ def bop(update, context):
     chat_id = update.message.chat_id
 
     bsp = update.message.reply_photo(
-        photo="https://i.ibb.co/G0jrVK7/map.png"
+        photo=url
     )
     print(bsp)
     # bsm = update.message.reply_message(
@@ -108,12 +108,10 @@ def hello(update, context):
                  'options': ['window', 'project_x'], 'constraints': [''], 'coord_x': '1', 'coord_y': '3'}
     res_info = {'start_date': '06/15/2020', 'end_date': '07/15/2020'}
     office_ = workplace["office"]
-    #OFFICE_SEAT_RESERVATION.format(**workplace, **res_info)
+    # OFFICE_SEAT_RESERVATION.format(**workplace, **res_info)
     update.message.reply_text(
         # 'Hello {}'.format(update.message.from_user.first_name))
         OFFICE_SEAT_RESERVATION, parse_mode=ParseMode.MARKDOWN_V2)
-
-
 
 
 def reserve_seat(update, context):
@@ -121,16 +119,14 @@ def reserve_seat(update, context):
                  'options': ['window', 'project_x'], 'constraints': [''], 'coord_x': '1', 'coord_y': '3'}
     res_info = {'start_date': '06/15/2020', 'end_date': '07/15/2020'}
     office_ = workplace["office"]
-    #OFFICE_SEAT_RESERVATION.format(**workplace, **res_info)
-    print(start_date)
-    print(end_date)
+    # OFFICE_SEAT_RESERVATION.format(**workplace, **res_info)
+    # print(start_date)
+    # print(end_date)
     update.message.reply_text(
-        OFFICE_SEAT_RESERVATION_1+wp_number, parse_mode=ParseMode.MARKDOWN_V2)
+        OFFICE_SEAT_RESERVATION_1 + wp_number, parse_mode=ParseMode.MARKDOWN_V2)
 
-    update.message.reply_text(
-        OFFICE_SEAT_RESERVATION_2+start_date+" по "+end_date+" включительно\.", parse_mode=ParseMode.MARKDOWN_V2)
-    update.message.reply_photo(
-        photo="https://i.ibb.co/G0jrVK7/map.png")
+    # update.message.reply_text(
+    #    OFFICE_SEAT_RESERVATION_2+start_date+" по "+end_date+" включительно\.", parse_mode=ParseMode.MARKDOWN_V2)
 
 
 # workplace = {'office': 'Kyiv', 'floor': '3', 'number': '300-10', 'type': 'hotdesk', 'options': ['window', 'project_x'], 'constraints': [''], 'coord_x': '1', 'coord_y': '3'}
@@ -279,9 +275,13 @@ def identify_next_step_after_auth(update, context):
         start_date_calendar_handler(update, context)
         finish_date_calendar_handler(update, context)
         return HOTDESK_STORY
-    elif chosen_option == WANT_BACK_TO_OFFICE:
+    elif chosen_option == responses.BUTTON_QUARANTINE:
+        reply_keyboard = [["Согласен", "Не нравится"]]
         update.message.reply_text(
-            'Gorgeous! You want to ' + chosen_option)
+            # '**Access GRANTED**\nHow can i help you?',
+            responses.QUARANTINE_YES+"Kiev\-506\-1\."+"\nЖдем тебя *15/06/2020* в офисе\!",
+            reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True), parse_mode=ParseMode.MARKDOWN_V2)
+        return HOTDESK_STORY
     elif chosen_option == BUSINESS_TRIP:
         update.message.reply_text(
             'HAPPY BUSINESS TRIP! ' + chosen_option + '. Please enter the preferred date in UNIX timestamp format of course:')
@@ -419,7 +419,7 @@ def main():
     inv_users = get_users(sheet)
     print(inv_users)
     # bootstrapping telegram bot
-    updater = Updater(TG_TOKEN, use_context=True)
+    updater = Updater(Q_TG_TOKEN, use_context=True)
     dp = updater.dispatcher
     # print("get_lists(sheet, 'Credentials') output:")
     # print(get_lists(sheet, "Credentials"))
